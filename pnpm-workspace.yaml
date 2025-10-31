@@ -3,6 +3,7 @@ packages:
   - frontend
 
 ignoredBuiltDependencies:
+  - '@scarf/scarf'
   - esbuild
 
 onlyBuiltDependencies:

@@ -5,6 +5,7 @@ import { logger } from './infrastructure/logging/logger';
 import { prisma } from './infrastructure/database/prisma-client';
 import { JWTService } from './infrastructure/auth/jwt-service';
 import { redisClient } from './infrastructure/cache/redis-client';
+import { swaggerUi, specs } from './swagger';
 import {
   BookRepositoryPrisma,
   UserRepositoryPrisma,
@@ -737,11 +738,14 @@ async function bootstrap() {
     app.use('/api/cart', csrfProtection, createCartRoutes(cartController));
     app.use('/api/reviews', csrfProtection, createReviewRoutes(reviewController));
 
+    // Swagger documentation
+    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+
     // Error handling middleware (must be last)
     app.use(errorHandler);
 
     // 404 handler
-    app.use('*', (req, res) => {
+    app.use((req, res) => {
       res.status(404).json({
         error: 'Not found',
         message: `Route ${req.originalUrl} not found`
@@ -753,7 +757,7 @@ async function bootstrap() {
     app.listen(PORT, () => {
       logger.info(`Server running on port ${PORT}`);
       console.log(`🚀 Server running on http://localhost:${PORT}`);
-      console.log(`📚 API Documentation available at http://localhost:${PORT}/api`);
+      console.log(`📚 API Documentation available at http://localhost:${PORT}/api-docs`);
     });
 
     // Graceful shutdown
