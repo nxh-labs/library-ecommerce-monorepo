@@ -16,7 +16,7 @@ export class BookMapper {
       language: book.getLanguage(),
       pageCount: book.getPageCount(),
       coverImageUrl: book.getCoverImageUrl(),
-      categoryId: book.getCategoryId()?.getValue(),
+      categoryId: book.getCategoryId()?.getValue()!,
       createdAt: book.getCreatedAt(),
       updatedAt: book.getUpdatedAt()
     };

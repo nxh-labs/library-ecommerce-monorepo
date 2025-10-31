@@ -7,7 +7,7 @@ export class CategoryMapper {
       id: category.getId().getValue(),
       name: category.getName(),
       description: category.getDescription(),
-      parentId: category.getParentId()?.getValue(),
+      parentId: category.getParentId()?.getValue()!,
       createdAt: category.getCreatedAt(),
       updatedAt: category.getUpdatedAt()
     };

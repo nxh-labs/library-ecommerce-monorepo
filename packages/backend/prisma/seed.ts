@@ -583,11 +583,11 @@ async function main() {
         items: {
           create: [
             {
-              bookId: books[0].id, // The Great Gatsby
+              bookId: books[0]?.id!, // The Great Gatsby
               quantity: 1,
             },
             {
-              bookId: books[2].id, // 1984
+              bookId: books[2]?.id!, // 1984
               quantity: 2,
             },
           ],
@@ -596,11 +596,11 @@ async function main() {
     }),
     prisma.cart.create({
       data: {
-        userId: users[3].id, // Jane Smith
+        userId: users[3]?.id!, // Jane Smith
         items: {
           create: [
             {
-              bookId: books[6].id, // Pride and Prejudice
+              bookId: books[6]?.id!, // Pride and Prejudice
               quantity: 1,
             },
           ],
@@ -620,12 +620,12 @@ async function main() {
         items: {
           create: [
             {
-              bookId: books[1].id, // To Kill a Mockingbird
+              bookId: books[1]?.id!, // To Kill a Mockingbird
               quantity: 1,
               unitPrice: 14.99,
             },
             {
-              bookId: books[3].id, // Dune
+              bookId: books[3]?.id!, // Dune
               quantity: 1,
               unitPrice: 16.99,
             },
@@ -642,7 +642,7 @@ async function main() {
         items: {
           create: [
             {
-              bookId: books[4].id, // The Da Vinci Code
+              bookId: books[4]?.id!, // The Da Vinci Code
               quantity: 1,
               unitPrice: 15.99,
             },
@@ -659,12 +659,12 @@ async function main() {
         items: {
           create: [
             {
-              bookId: books[10].id, // Atomic Habits
+            bookId: books[10]?.id!, // Atomic Habits
               quantity: 1,
               unitPrice: 16.99,
             },
             {
-              bookId: books[11].id, // Clean Code
+              bookId: books[11]?.id!, // Clean Code
               quantity: 1,
               unitPrice: 24.99,
             },
@@ -679,7 +679,7 @@ async function main() {
     prisma.review.create({
       data: {
         userId: users[2].id, // John Doe
-        bookId: books[1].id, // To Kill a Mockingbird
+        bookId: books[1]?.id!, // To Kill a Mockingbird
         rating: 5,
         comment: 'A timeless classic that everyone should read. Harper Lee\'s writing is beautiful and the story is incredibly moving.',
       },
@@ -687,7 +687,7 @@ async function main() {
     prisma.review.create({
       data: {
         userId: users[3].id, // Jane Smith
-        bookId: books[4].id, // The Da Vinci Code
+        bookId: books[4]?.id!, // The Da Vinci Code
         rating: 4,
         comment: 'An exciting thriller with lots of twists. The historical elements were fascinating.',
       },
@@ -695,7 +695,7 @@ async function main() {
     prisma.review.create({
       data: {
         userId: users[4].id, // Bob Wilson
-        bookId: books[11].id, // Clean Code
+        bookId: books[11]?.id!, // Clean Code
         rating: 5,
         comment: 'Essential reading for any software developer. The principles outlined here are timeless.',
       },
@@ -703,7 +703,7 @@ async function main() {
     prisma.review.create({
       data: {
         userId: users[5].id, // Alice Johnson
-        bookId: books[6].id, // Pride and Prejudice
+        bookId: books[6]?.id!, // Pride and Prejudice
         rating: 4,
         comment: 'A charming romance with witty dialogue. Austen\'s social commentary is still relevant today.',
       },
@@ -711,7 +711,7 @@ async function main() {
     prisma.review.create({
       data: {
         userId: users[6].id, // Charlie Brown
-        bookId: books[15].id, // Harry Potter
+        bookId: books[15]?.id!, // Harry Potter
         rating: 5,
         comment: 'Magical! This book transported me back to my childhood. Rowling\'s world-building is incredible.',
       },
@@ -719,7 +719,7 @@ async function main() {
     prisma.review.create({
       data: {
         userId: users[7].id, // Diana Prince
-        bookId: books[10].id, // Atomic Habits
+        bookId: books[10]?.id!, // Atomic Habits
         rating: 4,
         comment: 'Practical advice for building better habits. The concepts are simple but powerful.',
       },

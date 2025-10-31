@@ -1,4 +1,6 @@
 import winston from 'winston';
+import fs from 'fs';
+import path from 'path';
 
 const logFormat = winston.format.combine(
   winston.format.timestamp(),
@@ -41,9 +43,7 @@ if (process.env.NODE_ENV !== 'production') {
   }));
 }
 
-// Create logs directory if it doesn't exist
-import fs from 'fs';
-import path from 'path';
+
 
 const logsDir = path.join(process.cwd(), 'logs');
 if (!fs.existsSync(logsDir)) {

@@ -75,7 +75,7 @@ export function errorHandler(
     });
   }
 
-  res.status(500).json({
+ return  res.status(500).json({
     error: 'Internal server error',
     message: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong',
   });
@@ -101,9 +101,9 @@ export function authenticate(jwtService: JWTService) {
         role: new UserRoleValue(payload.role as UserRole),
       };
 
-      next();
+      return next();
     } catch (error) {
-      next(error);
+      return next(error);
     }
   };
 }
@@ -130,7 +130,7 @@ export function authorize(allowedRoles: UserRole[]) {
       });
     }
 
-    next();
+    return next();
   };
 }
 
@@ -231,22 +231,22 @@ export function sanitizeInput() {
   ];
 }
 
-// Enhanced validation middleware
-export function validateRequest(validations: any[]) {
-  return async (req: Request, res: Response, next: NextFunction) => {
-    await Promise.all(validations.map(validation => validation.run(req)));
+// // Enhanced validation middleware
+// export function validateRequest(validations: any[]) {
+//   return async (req: Request, res: Response, next: NextFunction) => {
+//     await Promise.all(validations.map(validation => validation.run(req)));
 
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        error: 'Validation failed',
-        details: errors.array(),
-      });
-    }
+//     const errors = validationResult(req);
+//     if (!errors.isEmpty()) {
+//       return res.status(400).json({
+//         error: 'Validation failed',
+//         details: errors.array(),
+//       });
+//     }
 
-    next();
-  };
-}
+//     next();
+//   };
+// }
 
 // Security headers middleware
 export function securityHeaders(req: Request, res: Response, next: NextFunction) {
@@ -288,6 +288,6 @@ export function requestSizeLimit() {
       });
     }
 
-    next();
+    return next();
   };
 }

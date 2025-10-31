@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { validate } from 'class-validator';
-import { plainToClass } from 'class-transformer';
+import { ClassConstructor, plainToClass } from 'class-transformer';
 
-export function validateDto(dtoClass: any) {
+export function validateDto<T extends object = any>(dtoClass: ClassConstructor<T>) {
   return (req: Request, res: Response, next: NextFunction) => {
     const dtoObject = plainToClass(dtoClass, req.body);
     validate(dtoObject).then(errors => {
@@ -16,12 +16,12 @@ export function validateDto(dtoClass: any) {
         });
       }
       req.body = dtoObject;
-      next();
+      return next();
     });
   };
 }
 
-export function validateQuery(dtoClass: any) {
+export function validateQuery<T extends object = any>(dtoClass: ClassConstructor<T>) {
   return (req: Request, res: Response, next: NextFunction) => {
     const dtoObject = plainToClass(dtoClass, req.query);
     validate(dtoObject).then(errors => {
@@ -35,7 +35,7 @@ export function validateQuery(dtoClass: any) {
         });
       }
       req.query = dtoObject as any;
-      next();
+      return next();
     });
   };
 }

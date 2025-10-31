@@ -1,7 +1,7 @@
 import express from 'express';
 import helmet from 'helmet';
 import compression from 'compression';
-import { logger } from './infrastructure/logging/logger';
+import { logger } from './infrastructure/logging';
 import { prisma } from './infrastructure/database/prisma-client';
 import { JWTService } from './infrastructure/auth/jwt-service';
 import { redisClient } from './infrastructure/cache/redis-client';

@@ -4,10 +4,10 @@
   "description": "Monorepo for library e-commerce API with backend and frontend",
   "scripts": {
     "dev": "pnpm --recursive --parallel run dev",
-    "dev:backend": " nodemon --exec \"ts-node --project packages/backend/tsconfig.json\" packages/backend/src/server.ts",
+    "dev:backend": " nodemon --exec \"ts-node --project packages/backend/tsconfig.json\" -r tsconfig-paths/register  packages/backend/src/server.ts",
     "dev:frontend": "cd packages/frontend && vite",
     "build": "pnpm --recursive run build",
-    "build:backend": "cd packages/backend && tsc",
+    "build:backend": "cd packages/backend && npx tsup",
     "build:frontend": "cd packages/frontend && vite build",
     "start:backend": "cd packages/backend && node dist/server.js",
     "test": "pnpm --recursive run test",
@@ -18,7 +18,7 @@
     "db:migrate": "cd packages/backend && npx prisma migrate dev",
     "db:push": "cd packages/backend && npx prisma db push",
     "db:reset": "cd packages/backend && npx prisma migrate reset",
-    "db:seed": "cd packages/backend && tsx prisma/seed.ts",
+    "db:seed": "cd packages/backend && ts-node prisma/seed.ts",
     "db:studio": "cd packages/backend && npx prisma studio",
     "db:generate": "cd packages/backend && npx prisma generate",
     "clean": "rm -rf packages/backend/dist packages/frontend/dist node_modules/.cache",
@@ -80,6 +80,8 @@
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",
     "nodemon": "^3.0.1",
-    "ts-node": "^10.9.1"
+    "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.2.0",
+    "tsup": "^8.5.0"
   }
 }
