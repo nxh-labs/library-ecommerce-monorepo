@@ -1,0 +1,182 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  passwordHash String
+  firstName   String
+  lastName    String
+  role        UserRole @default(CUSTOMER)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  lastLoginAt DateTime?
+
+  // Relations
+  orders     Order[]
+  reviews    Review[]
+  cart       Cart?
+
+  @@map("users")
+  @@index([email])
+  @@index([role])
+  @@index([createdAt])
+}
+
+model Book {
+  id             String   @id @default(cuid())
+  title          String
+  isbn           String   @unique
+  author         String
+  description    String?
+  price          Float
+  stockQuantity  Int      @default(0)
+  publisher      String
+  publicationDate DateTime
+  language       String
+  pageCount      Int
+  coverImageUrl  String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  reviews    Review[]
+  orderItems OrderItem[]
+
+  @@map("books")
+  @@index([title])
+  @@index([author])
+  @@index([categoryId])
+  @@index([price])
+  @@index([stockQuantity])
+  @@index([createdAt])
+  @@index([title, author])
+  @@index([categoryId, price])
+  @@index([stockQuantity, createdAt])
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  parentId    String?
+  parent      Category? @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children    Category[] @relation("CategoryHierarchy")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  books Book[]
+
+  @@map("categories")
+  @@index([name])
+  @@index([parentId])
+  @@index([createdAt])
+  @@index([name, parentId])
+}
+
+model Order {
+  id             String      @id @default(cuid())
+  userId         String
+  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status         OrderStatus @default(PENDING)
+  shippingAddress String
+  billingAddress String
+  orderDate      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  // Relations
+  items OrderItem[]
+
+  @@map("orders")
+  @@index([userId])
+  @@index([status])
+  @@index([orderDate])
+  @@index([userId, status])
+  @@index([userId, orderDate])
+}
+
+model OrderItem {
+  id       String @id @default(cuid())
+  orderId  String
+  order    Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  bookId   String
+  book     Book   @relation(fields: [bookId], references: [id], onDelete: Restrict)
+  quantity Int
+  unitPrice Float
+
+  @@map("order_items")
+}
+
+model Cart {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  items CartItem[]
+
+  @@map("carts")
+}
+
+model CartItem {
+  id       String @id @default(cuid())
+  cartId   String
+  cart     Cart   @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  bookId   String
+  quantity Int
+  addedAt  DateTime @default(now())
+
+  @@unique([cartId, bookId])
+  @@map("cart_items")
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookId    String
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  rating    Int
+  comment   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, bookId])
+  @@map("reviews")
+  @@index([bookId])
+  @@index([userId])
+  @@index([rating])
+  @@index([createdAt])
+  @@index([bookId, rating])
+  @@index([userId, createdAt])
+}
+
+enum UserRole {
+  CUSTOMER
+  MANAGER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
