@@ -14,14 +14,18 @@ export interface User {
 export interface Book {
   id: string;
   title: string;
-  author: string;
   isbn: string;
+  author: string;
   description: string;
   price: number;
-  stock: number;
+  stockQuantity: number;
+  publisher: string;
+  publicationDate: string;
+  language: string;
+  pageCount: number;
+  coverImageUrl?: string;
   categoryId: string;
   category?: Category;
-  publishedAt: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -38,7 +42,8 @@ export interface Cart {
   id: string;
   userId: string;
   items: CartItem[];
-  total: number;
+  totalItems: number;
+  estimatedTotalPrice: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -46,40 +51,42 @@ export interface Cart {
 export interface CartItem {
   id: string;
   bookId: string;
-  book: Book;
   quantity: number;
-  price: number;
+  addedAt: string;
+  book?: Book;
 }
 
 export interface Order {
   id: string;
   userId: string;
-  user: User;
-  items: OrderItem[];
-  total: number;
   status: OrderStatus;
-  createdAt: string;
+  items: OrderItem[];
+  shippingAddress: string;
+  billingAddress: string;
+  totalAmount: number;
+  orderDate: string;
   updatedAt: string;
+  user?: User;
 }
 
 export interface OrderItem {
-  id: string;
   bookId: string;
-  book: Book;
   quantity: number;
-  price: number;
+  unitPrice: number;
+  totalPrice: number;
+  book?: Book;
 }
 
 export interface Review {
   id: string;
   userId: string;
   bookId: string;
-  user: User;
-  book: Book;
   rating: number;
   comment: string;
   createdAt: string;
   updatedAt: string;
+  user?: User;
+  book?: Book;
 }
 
 // Enums
@@ -103,13 +110,17 @@ export interface RegisterDto {
 
 export interface CreateBookDto {
   title: string;
-  author: string;
   isbn: string;
+  author: string;
   description: string;
   price: number;
-  stock: number;
+  stockQuantity: number;
+  publisher: string;
+  publicationDate: string;
+  language: string;
+  pageCount: number;
+  coverImageUrl?: string;
   categoryId: string;
-  publishedAt: string;
 }
 
 export interface UpdateBookDto extends Partial<CreateBookDto> {
@@ -122,9 +133,30 @@ export interface CreateCategoryDto {
 }
 
 export interface CreateReviewDto {
-   bookId: string;
-   rating: number;
-   comment: string;
+  bookId: string;
+  rating: number;
+  comment: string;
+}
+
+export interface CreateOrderDto {
+  items: Array<{
+    bookId: string;
+    quantity: number;
+    unitPrice: number;
+  }>;
+  shippingAddress: string;
+  billingAddress: string;
+}
+
+export interface UpdateOrderAddressDto {
+  shippingAddress?: string;
+  billingAddress?: string;
+}
+
+export interface CartSummary {
+  totalItems: number;
+  totalUniqueItems: number;
+  estimatedTotalPrice: number;
 }
 
 export interface ChangePasswordDto {

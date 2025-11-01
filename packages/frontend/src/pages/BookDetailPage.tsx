@@ -4,6 +4,18 @@ import { LoadingSpinner, ErrorMessage } from '../components';
 import { Book, Review } from '../types';
 import { apiService } from '../services/api';
 import { useAuth, useCart } from '../context/AppContext';
+import ReviewForm from '../components/ReviewForm';
+
+// Fonction utilitaire pour les notifications
+const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
+  // Implémentation simple avec alert pour l'instant
+  // À remplacer par une vraie bibliothèque de notifications
+  if (type === 'success') {
+    alert(`✅ ${message}`);
+  } else {
+    alert(`❌ ${message}`);
+  }
+};
 
 const BookDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -17,6 +29,7 @@ const BookDetailPage: React.FC = () => {
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [addingToCart, setAddingToCart] = useState(false);
+  const [showReviewForm, setShowReviewForm] = useState(false);
 
   useEffect(() => {
     if (!id) {
@@ -58,14 +71,28 @@ const BookDetailPage: React.FC = () => {
 
     try {
       setAddingToCart(true);
-      await addItem({ bookId: book.id, quantity: 1, book, price: book.price });
+      await addItem({ bookId: book.id, quantity: 1, book });
       // Afficher une notification de succès
-      alert('Livre ajouté au panier !');
+      showNotification('Livre ajouté au panier !', 'success');
     } catch (err) {
-      alert('Erreur lors de l\'ajout au panier');
+      showNotification('Erreur lors de l\'ajout au panier', 'error');
       console.error('Erreur:', err);
     } finally {
       setAddingToCart(false);
+    }
+  };
+
+  const handleReviewSubmitted = async () => {
+    setShowReviewForm(false);
+    // Recharger les avis
+    try {
+      setReviewsLoading(true);
+      const response = await apiService.reviews.getByBook(id);
+      setReviews(response.data.data);
+    } catch (err) {
+      console.error('Erreur lors du rechargement des avis:', err);
+    } finally {
+      setReviewsLoading(false);
     }
   };
 
@@ -118,18 +145,18 @@ const BookDetailPage: React.FC = () => {
                     {book.price.toFixed(2)} €
                   </span>
                   <span className={`text-sm px-3 py-1 rounded-full ${
-                    book.stock > 0
+                    book.stockQuantity > 0
                       ? 'bg-green-100 text-green-800'
                       : 'bg-red-100 text-red-800'
                   }`}>
-                    {book.stock > 0 ? `${book.stock} en stock` : 'Rupture de stock'}
+                    {book.stockQuantity > 0 ? `${book.stockQuantity} en stock` : 'Rupture de stock'}
                   </span>
                 </div>
 
                 {/* ISBN et date */}
                 <div className="text-sm text-gray-600 space-y-1">
                   <p><strong>ISBN:</strong> {book.isbn}</p>
-                  <p><strong>Date de publication:</strong> {new Date(book.publishedAt).toLocaleDateString('fr-FR')}</p>
+                  <p><strong>Date de publication:</strong> {new Date(book.publicationDate).toLocaleDateString('fr-FR')}</p>
                 </div>
               </div>
 
@@ -143,7 +170,7 @@ const BookDetailPage: React.FC = () => {
               <div className="flex space-x-4">
                 <button
                   onClick={handleAddToCart}
-                  disabled={book.stock === 0 || addingToCart}
+                  disabled={book.stockQuantity === 0 || addingToCart}
                   className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg font-semibold transition-colors disabled:cursor-not-allowed"
                 >
                   {addingToCart ? (
@@ -151,7 +178,7 @@ const BookDetailPage: React.FC = () => {
                       <LoadingSpinner size="sm" className="mr-2" />
                       Ajout en cours...
                     </>
-                  ) : book.stock > 0 ? (
+                  ) : book.stockQuantity > 0 ? (
                     'Ajouter au panier'
                   ) : (
                     'Indisponible'
@@ -212,9 +239,22 @@ const BookDetailPage: React.FC = () => {
 
           {user && (
             <div className="mt-6 pt-6 border-t border-gray-200">
-              <button className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors">
-                Écrire un avis
+              <button
+                onClick={() => setShowReviewForm(!showReviewForm)}
+                className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
+              >
+                {showReviewForm ? 'Annuler' : 'Écrire un avis'}
               </button>
+
+              {showReviewForm && (
+                <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                  <ReviewForm
+                    bookId={id!}
+                    onReviewSubmitted={handleReviewSubmitted}
+                    onCancel={() => setShowReviewForm(false)}
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>

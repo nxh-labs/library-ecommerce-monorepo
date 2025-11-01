@@ -159,9 +159,9 @@ const AdminDashboard: React.FC = () => {
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-gray-900">{order.total.toFixed(2)} €</p>
+                    <p className="font-bold text-gray-900">{order.totalAmount.toFixed(2)} €</p>
                     <p className="text-sm text-gray-600">
-                      {new Date(order.createdAt).toLocaleDateString('fr-FR')}
+                      {new Date(order.orderDate).toLocaleDateString('fr-FR')}
                     </p>
                   </div>
                 </div>

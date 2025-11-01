@@ -62,7 +62,7 @@ const CartPage: React.FC = () => {
                       </Link>
                       <p className="text-sm text-gray-600">par {item.book.author}</p>
                       <p className="text-sm font-medium text-gray-900 mt-1">
-                        {item.price.toFixed(2)} € chacun
+                        {item.book?.price.toFixed(2)} € chacun
                       </p>
                     </div>
 
@@ -86,7 +86,7 @@ const CartPage: React.FC = () => {
 
                       <div className="text-right">
                         <p className="text-lg font-semibold text-gray-900">
-                          {(item.price * item.quantity).toFixed(2)} €
+                          {item.book ? (item.book.price * item.quantity).toFixed(2) : '0.00'} €
                         </p>
                       </div>
 
@@ -123,8 +123,8 @@ const CartPage: React.FC = () => {
 
               <div className="space-y-2 mb-4">
                 <div className="flex justify-between text-sm">
-                  <span>Sous-total ({cart.items.length} article{cart.items.length > 1 ? 's' : ''})</span>
-                  <span>{cart.total.toFixed(2)} €</span>
+                  <span>Sous-total ({cart.totalItems} article{cart.totalItems > 1 ? 's' : ''})</span>
+                  <span>{cart.estimatedTotalPrice.toFixed(2)} €</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Livraison</span>
@@ -135,7 +135,7 @@ const CartPage: React.FC = () => {
               <div className="border-t border-gray-200 pt-4 mb-6">
                 <div className="flex justify-between text-lg font-semibold">
                   <span>Total</span>
-                  <span>{cart.total.toFixed(2)} €</span>
+                  <span>{cart.estimatedTotalPrice.toFixed(2)} €</span>
                 </div>
               </div>
 

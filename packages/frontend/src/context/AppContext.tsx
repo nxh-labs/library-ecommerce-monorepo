@@ -28,7 +28,8 @@ type CartAction =
   | { type: 'CART_ADD_ITEM'; payload: any }
   | { type: 'CART_UPDATE_ITEM'; payload: { itemId: string; quantity: number } }
   | { type: 'CART_REMOVE_ITEM'; payload: string }
-  | { type: 'CART_CLEAR' };
+  | { type: 'CART_CLEAR' }
+  | { type: 'CART_UPDATE_TOTAL'; payload: number };
 
 type AppAction = AuthAction | CartAction;
 
@@ -109,7 +110,11 @@ const appReducer = (state: AppState, action: AppAction): AppState => {
       const updatedCart = {
         ...currentCart,
         items: updatedItems,
-        total: updatedItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
+        totalItems: updatedItems.length,
+        estimatedTotalPrice: updatedItems.reduce((sum, item) => {
+          const book = item.book;
+          return book ? sum + (book.price * item.quantity) : sum;
+        }, 0),
       };
 
       return {
@@ -129,7 +134,11 @@ const appReducer = (state: AppState, action: AppAction): AppState => {
       const updatedCart2 = {
         ...state.cart.cart,
         items: updatedItems2,
-        total: updatedItems2.reduce((sum, item) => sum + item.price * item.quantity, 0),
+        totalItems: updatedItems2.length,
+        estimatedTotalPrice: updatedItems2.reduce((sum, item) => {
+          const book = item.book;
+          return book ? sum + (book.price * item.quantity) : sum;
+        }, 0),
       };
 
       return {
@@ -147,7 +156,11 @@ const appReducer = (state: AppState, action: AppAction): AppState => {
       const updatedCart3 = {
         ...state.cart.cart,
         items: filteredItems,
-        total: filteredItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
+        totalItems: filteredItems.length,
+        estimatedTotalPrice: filteredItems.reduce((sum, item) => {
+          const book = item.book;
+          return book ? sum + (book.price * item.quantity) : sum;
+        }, 0),
       };
 
       return {
@@ -159,6 +172,19 @@ const appReducer = (state: AppState, action: AppAction): AppState => {
       return {
         ...state,
         cart: { cart: null, loading: false },
+      };
+
+    case 'CART_UPDATE_TOTAL':
+      if (!state.cart.cart) return state;
+      return {
+        ...state,
+        cart: {
+          ...state.cart,
+          cart: {
+            ...state.cart.cart,
+            estimatedTotalPrice: action.payload,
+          },
+        },
       };
 
     default:
@@ -250,6 +276,9 @@ export const useCart = () => {
     },
     clearCart: () => {
       dispatch({ type: 'CART_CLEAR' });
+    },
+    updateTotal: (total: number) => {
+      dispatch({ type: 'CART_UPDATE_TOTAL', payload: total });
     },
     setLoading: (loading: boolean) => {
       dispatch({ type: 'CART_LOADING', payload: loading });

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { LoadingSpinner, ErrorMessage } from '../components';
-import { Order } from '../types';
+import { Order, OrderStatus } from '../types';
 import { apiService } from '../services/api';
 import { useAuth } from '../context/AppContext';
 
@@ -10,6 +10,7 @@ const OrdersPage: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedStatus, setSelectedStatus] = useState<OrderStatus | ''>('');
 
   useEffect(() => {
     if (!user) return;
@@ -17,7 +18,11 @@ const OrdersPage: React.FC = () => {
     const fetchOrders = async () => {
       try {
         setLoading(true);
-        const response = await apiService.orders.getAll();
+        const params: any = {};
+        if (selectedStatus) {
+          params.status = selectedStatus;
+        }
+        const response = await apiService.orders.getAll(params);
         setOrders(response.data.data);
       } catch (err) {
         setError('Erreur lors du chargement des commandes');
@@ -28,7 +33,7 @@ const OrdersPage: React.FC = () => {
     };
 
     fetchOrders();
-  }, [user]);
+  }, [user, selectedStatus]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -101,6 +106,28 @@ const OrdersPage: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Mes commandes</h1>
 
+        {/* Filtre par statut */}
+        <div className="bg-white p-4 rounded-lg shadow-sm mb-6">
+          <div className="flex items-center space-x-4">
+            <label htmlFor="status-filter" className="text-sm font-medium text-gray-700">
+              Filtrer par statut:
+            </label>
+            <select
+              id="status-filter"
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value as OrderStatus | '')}
+              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Tous les statuts</option>
+              <option value="PENDING">En attente</option>
+              <option value="CONFIRMED">Confirmée</option>
+              <option value="SHIPPED">Expédiée</option>
+              <option value="DELIVERED">Livrée</option>
+              <option value="CANCELLED">Annulée</option>
+            </select>
+          </div>
+        </div>
+
         {orders.length === 0 ? (
           <div className="text-center py-12">
             <svg className="mx-auto h-24 w-24 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -126,7 +153,7 @@ const OrdersPage: React.FC = () => {
                       Commande #{order.id.slice(-8)}
                     </h3>
                     <p className="text-sm text-gray-600">
-                      Passée le {new Date(order.createdAt).toLocaleDateString('fr-FR')}
+                      Passée le {new Date(order.orderDate).toLocaleDateString('fr-FR')}
                     </p>
                   </div>
                   <div className="text-right">
@@ -134,7 +161,7 @@ const OrdersPage: React.FC = () => {
                       {getStatusText(order.status)}
                     </span>
                     <p className="text-lg font-bold text-gray-900 mt-2">
-                      {order.total.toFixed(2)} €
+                      {order.totalAmount.toFixed(2)} €
                     </p>
                   </div>
                 </div>
@@ -163,7 +190,7 @@ const OrdersPage: React.FC = () => {
                           Qté: {item.quantity}
                         </div>
                         <div className="text-sm font-medium text-gray-900">
-                          {(item.price * item.quantity).toFixed(2)} €
+                          {(item.unitPrice * item.quantity).toFixed(2)} €
                         </div>
                       </div>
                     ))}

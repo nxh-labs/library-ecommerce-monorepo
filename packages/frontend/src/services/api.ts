@@ -102,8 +102,30 @@ export const apiService = {
 
   // Livres
   books: {
-    getAll: (params?: { page?: number; limit?: number; category?: string; search?: string }) =>
+    getAll: (params?: {
+      categoryId?: string;
+      minPrice?: number;
+      maxPrice?: number;
+      sortBy?: string;
+      sortOrder?: 'asc' | 'desc';
+      limit?: number;
+      offset?: number;
+      cursor?: string;
+    }) =>
       api.get<PaginatedResponse<any>>('/books', { params }),
+
+    search: (params: {
+      query: string;
+      categoryId?: string;
+      minPrice?: number;
+      maxPrice?: number;
+      sortBy?: string;
+      sortOrder?: 'asc' | 'desc';
+      limit?: number;
+      offset?: number;
+      cursor?: string;
+    }) =>
+      api.get<PaginatedResponse<any>>('/books/search', { params }),
 
     getById: (id: string) =>
       api.get<ApiResponse<any>>(`/books/${id}`),
@@ -116,12 +138,25 @@ export const apiService = {
 
     delete: (id: string) =>
       api.delete<ApiResponse<void>>(`/books/${id}`),
+
+    updateStock: (id: string, stockQuantity: number) =>
+      api.patch<ApiResponse<void>>(`/books/${id}/stock`, { stockQuantity }),
   },
 
   // Catégories
   categories: {
-    getAll: () =>
-      api.get<ApiResponse<any[]>>('/categories'),
+    getAll: (params?: {
+      parentId?: string;
+      search?: string;
+      sortBy?: string;
+      sortOrder?: 'asc' | 'desc';
+      limit?: number;
+      offset?: number;
+    }) =>
+      api.get<PaginatedResponse<any>>('/categories', { params }),
+
+    getHierarchy: () =>
+      api.get<ApiResponse<any[]>>('/categories/hierarchy'),
 
     getById: (id: string) =>
       api.get<ApiResponse<any>>(`/categories/${id}`),
@@ -141,14 +176,17 @@ export const apiService = {
     get: () =>
       api.get<ApiResponse<any>>('/cart'),
 
+    getSummary: () =>
+      api.get<ApiResponse<any>>('/cart/summary'),
+
     addItem: (bookId: string, quantity: number) =>
       api.post<ApiResponse<any>>('/cart/items', { bookId, quantity }),
 
     updateItem: (itemId: string, quantity: number) =>
       api.put<ApiResponse<any>>(`/cart/items/${itemId}`, { quantity }),
 
-    removeItem: (itemId: string) =>
-      api.delete<ApiResponse<void>>(`/cart/items/${itemId}`),
+    removeItem: (bookId: string) =>
+      api.delete<ApiResponse<any>>(`/cart/items/${bookId}`),
 
     clear: () =>
       api.delete<ApiResponse<void>>('/cart'),
@@ -156,7 +194,15 @@ export const apiService = {
 
   // Commandes
   orders: {
-    getAll: (params?: { page?: number; limit?: number }) =>
+    getAll: (params?: {
+      status?: string;
+      dateFrom?: string;
+      dateTo?: string;
+      sortBy?: string;
+      sortOrder?: 'asc' | 'desc';
+      limit?: number;
+      offset?: number;
+    }) =>
       api.get<PaginatedResponse<any>>('/orders', { params }),
 
     getById: (id: string) =>
@@ -165,14 +211,29 @@ export const apiService = {
     create: (orderData: any) =>
       api.post<ApiResponse<any>>('/orders', orderData),
 
+    updateAddress: (id: string, addressData: any) =>
+      api.put<ApiResponse<any>>(`/orders/${id}/address`, addressData),
+
     updateStatus: (id: string, status: string) =>
       api.put<ApiResponse<any>>(`/orders/${id}/status`, { status }),
   },
 
   // Avis
   reviews: {
-    getByBook: (bookId: string, params?: { page?: number; limit?: number }) =>
-      api.get<PaginatedResponse<any>>(`/books/${bookId}/reviews`, { params }),
+    getByBook: (bookId: string, params?: {
+      rating?: number;
+      sortBy?: string;
+      sortOrder?: 'asc' | 'desc';
+      limit?: number;
+      offset?: number;
+    }) =>
+      api.get<PaginatedResponse<any>>(`/reviews/book/${bookId}`, { params }),
+
+    getBookRating: (bookId: string) =>
+      api.get<ApiResponse<any>>(`/reviews/book/${bookId}/rating`),
+
+    getById: (id: string) =>
+      api.get<ApiResponse<any>>(`/reviews/${id}`),
 
     create: (reviewData: { bookId: string; rating: number; comment: string }) =>
       api.post<ApiResponse<any>>('/reviews', reviewData),
@@ -182,11 +243,27 @@ export const apiService = {
 
     delete: (id: string) =>
       api.delete<ApiResponse<void>>(`/reviews/${id}`),
+
+    getUserReviews: (params?: {
+      rating?: number;
+      sortBy?: string;
+      sortOrder?: 'asc' | 'desc';
+      limit?: number;
+      offset?: number;
+    }) =>
+      api.get<PaginatedResponse<any>>('/reviews/user/reviews', { params }),
   },
 
   // Utilisateurs (Admin seulement)
   users: {
-    getAll: (params?: { page?: number; limit?: number }) =>
+    getAll: (params?: {
+      role?: string;
+      search?: string;
+      sortBy?: string;
+      sortOrder?: 'asc' | 'desc';
+      limit?: number;
+      offset?: number;
+    }) =>
       api.get<PaginatedResponse<any>>('/users', { params }),
 
     getById: (id: string) =>
