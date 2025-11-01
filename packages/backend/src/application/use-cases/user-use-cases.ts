@@ -33,16 +33,12 @@ export class CreateUserUseCase {
       role
     );
 
-    await this.unitOfWork.beginTransaction();
-    try {
-      await this.unitOfWork.getUserRepository().save(user);
-      await this.unitOfWork.commit();
+    const result = await this.unitOfWork.executeInTransaction(async (uow) => {
+      const userRepository = uow.getUserRepository();
+      await userRepository.save(user);
       return this.mapToResponseDto(user);
-    } catch (error) {
-      console.error(error)
-      await this.unitOfWork.rollback();
-      throw error;
-    }
+    });
+    return result;
   }
 
   private async hashPassword(password: string): Promise<string> {
@@ -80,15 +76,12 @@ export class UpdateUserUseCase {
       user.updateName(dto.firstName || user.getFirstName(), dto.lastName || user.getLastName());
     }
 
-    await this.unitOfWork.beginTransaction();
-    try {
-      await this.userRepository.update(user);
-      await this.unitOfWork.commit();
+    const result = await this.unitOfWork.executeInTransaction(async (uow) => {
+      const userRepository = uow.getUserRepository();
+      await userRepository.update(user);
       return this.mapToResponseDto(user);
-    } catch (error) {
-      await this.unitOfWork.rollback();
-      throw error;
-    }
+    });
+    return result;
   }
 
   private mapToResponseDto(user: User): UserResponseDto {
@@ -113,14 +106,10 @@ export class DeleteUserUseCase {
 
   async execute(id: string): Promise<void> {
     const userId = new UserId(id);
-    await this.unitOfWork.beginTransaction();
-    try {
-      await this.userRepository.delete(userId);
-      await this.unitOfWork.commit();
-    } catch (error) {
-      await this.unitOfWork.rollback();
-      throw error;
-    }
+    await this.unitOfWork.executeInTransaction(async (uow) => {
+      const userRepository = uow.getUserRepository();
+      await userRepository.delete(userId);
+    });
   }
 }
 
@@ -147,14 +136,10 @@ export class ChangePasswordUseCase {
     const newHashedPassword = await this.hashPassword(dto.newPassword);
     user.updatePassword(newHashedPassword);
 
-    await this.unitOfWork.beginTransaction();
-    try {
-      await this.userRepository.update(user);
-      await this.unitOfWork.commit();
-    } catch (error) {
-      await this.unitOfWork.rollback();
-      throw error;
-    }
+    await this.unitOfWork.executeInTransaction(async (uow) => {
+      const userRepository = uow.getUserRepository();
+      await userRepository.update(user);
+    });
   }
 
   private async hashPassword(password: string): Promise<string> {

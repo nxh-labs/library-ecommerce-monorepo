@@ -33,15 +33,12 @@ export class AddToCartUseCase {
     // Add item to cart
     const updatedCart = cart.addItem(dto.bookId, dto.quantity);
 
-    await this.unitOfWork.beginTransaction();
-    try {
-      await this.cartRepository.save(updatedCart);
-      await this.unitOfWork.commit();
+    const result = await this.unitOfWork.executeInTransaction(async (uow) => {
+      const cartRepo = uow.getCartRepository();
+      await cartRepo.save(updatedCart);
       return this.mapToResponseDto(updatedCart);
-    } catch (error) {
-      await this.unitOfWork.rollback();
-      throw error;
-    }
+    });
+    return result;
   }
 
   private mapToResponseDto(cart: Cart): CartResponseDto {
@@ -77,15 +74,12 @@ export class UpdateCartItemUseCase {
 
     const updatedCart = cart.updateItemQuantity(itemId, dto.quantity);
 
-    await this.unitOfWork.beginTransaction();
-    try {
-      await this.cartRepository.save(updatedCart);
-      await this.unitOfWork.commit();
+    const result = await this.unitOfWork.executeInTransaction(async (uow) => {
+      const cartRepo = uow.getCartRepository();
+      await cartRepo.save(updatedCart);
       return this.mapToResponseDto(updatedCart);
-    } catch (error) {
-      await this.unitOfWork.rollback();
-      throw error;
-    }
+    });
+    return result;
   }
 
   private mapToResponseDto(cart: Cart): CartResponseDto {
@@ -121,15 +115,12 @@ export class RemoveFromCartUseCase {
 
     const updatedCart = cart.removeItem(bookId);
 
-    await this.unitOfWork.beginTransaction();
-    try {
-      await this.cartRepository.save(updatedCart);
-      await this.unitOfWork.commit();
+    const result = await this.unitOfWork.executeInTransaction(async (uow) => {
+      const cartRepo = uow.getCartRepository();
+      await cartRepo.save(updatedCart);
       return this.mapToResponseDto(updatedCart);
-    } catch (error) {
-      await this.unitOfWork.rollback();
-      throw error;
-    }
+    });
+    return result;
   }
 
   private mapToResponseDto(cart: Cart): CartResponseDto {
@@ -165,14 +156,10 @@ export class ClearCartUseCase {
 
     const clearedCart = cart.clear();
 
-    await this.unitOfWork.beginTransaction();
-    try {
-      await this.cartRepository.save(clearedCart);
-      await this.unitOfWork.commit();
-    } catch (error) {
-      await this.unitOfWork.rollback();
-      throw error;
-    }
+    await this.unitOfWork.executeInTransaction(async (uow) => {
+      const cartRepo = uow.getCartRepository();
+      await cartRepo.save(clearedCart);
+    });
   }
 }
 

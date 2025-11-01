@@ -31,19 +31,15 @@ export class CreateBookUseCase {
       categoryId
     );
 
-    await this.unitOfWork.beginTransaction();
-    try {
-      await this.bookRepository.save(book);
-      await this.unitOfWork.commit();
+    await this.unitOfWork.executeInTransaction(async (uow) => {
+      const repo = uow.getBookRepository();
+      await repo.save(book);
+    });
 
-      // Invalidate popular books cache
-      await cacheService.invalidateBookCache(book.getId().getValue());
+    // Invalidate popular books cache
+    await cacheService.invalidateBookCache(book.getId().getValue());
 
-      return this.mapToResponseDto(book);
-    } catch (error) {
-      await this.unitOfWork.rollback();
-      throw error;
-    }
+    return this.mapToResponseDto(book);
   }
 
   private mapToResponseDto(book: Book): BookResponseDto {
@@ -93,19 +89,15 @@ export class UpdateBookUseCase {
     if (dto.pageCount) book.updateAuthor(dto.pageCount.toString()); // Note: should be updatePageCount
     if (dto.coverImageUrl) book.updateCoverImage(dto.coverImageUrl);
 
-    await this.unitOfWork.beginTransaction();
-    try {
-      await this.bookRepository.update(book);
-      await this.unitOfWork.commit();
+    await this.unitOfWork.executeInTransaction(async (uow) => {
+      const repo = uow.getBookRepository();
+      await repo.update(book);
+    });
 
-      // Invalidate book cache
-      await cacheService.invalidateBookCache(id);
+    // Invalidate book cache
+    await cacheService.invalidateBookCache(id);
 
-      return this.mapToResponseDto(book);
-    } catch (error) {
-      await this.unitOfWork.rollback();
-      throw error;
-    }
+    return this.mapToResponseDto(book);
   }
 
   private mapToResponseDto(book: Book): BookResponseDto {
@@ -136,17 +128,13 @@ export class DeleteBookUseCase {
 
   async execute(id: string): Promise<void> {
     const bookId = new BookId(id);
-    await this.unitOfWork.beginTransaction();
-    try {
-      await this.bookRepository.delete(bookId);
-      await this.unitOfWork.commit();
+    await this.unitOfWork.executeInTransaction(async (uow) => {
+      const repo = uow.getBookRepository();
+      await repo.delete(bookId);
+    });
 
-      // Invalidate book cache
-      await cacheService.invalidateBookCache(id);
-    } catch (error) {
-      await this.unitOfWork.rollback();
-      throw error;
-    }
+    // Invalidate book cache
+    await cacheService.invalidateBookCache(id);
   }
 }
 
@@ -158,17 +146,13 @@ export class UpdateBookStockUseCase {
 
   async execute(id: string, dto: UpdateStockDto): Promise<void> {
     const bookId = new BookId(id);
-    await this.unitOfWork.beginTransaction();
-    try {
-      await this.bookRepository.updateStock(bookId, dto.stockQuantity);
-      await this.unitOfWork.commit();
+    await this.unitOfWork.executeInTransaction(async (uow) => {
+      const repo = uow.getBookRepository();
+      await repo.updateStock(bookId, dto.stockQuantity);
+    });
 
-      // Invalidate book cache
-      await cacheService.invalidateBookCache(id);
-    } catch (error) {
-      await this.unitOfWork.rollback();
-      throw error;
-    }
+    // Invalidate book cache
+    await cacheService.invalidateBookCache(id);
   }
 }
 

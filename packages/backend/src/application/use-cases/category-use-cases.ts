@@ -29,19 +29,16 @@ export class CreateCategoryUseCase {
       parentId
     );
 
-    await this.unitOfWork.beginTransaction();
-    try {
-      await this.categoryRepository.save(category);
-      await this.unitOfWork.commit();
-
-      // Invalidate categories cache
-      await cacheService.invalidateCategoryCache();
-
+    const result = await this.unitOfWork.executeInTransaction(async (uow) => {
+      const repo = uow.getCategoryRepository();
+      await repo.save(category);
       return this.mapToResponseDto(category);
-    } catch (error) {
-      await this.unitOfWork.rollback();
-      throw error;
-    }
+    });
+
+    // Invalidate categories cache
+    await cacheService.invalidateCategoryCache();
+
+    return result;
   }
 
   private mapToResponseDto(category: Category): CategoryResponseDto {
@@ -82,19 +79,16 @@ export class UpdateCategoryUseCase {
       category.setParent(parentId);
     }
 
-    await this.unitOfWork.beginTransaction();
-    try {
-      await this.categoryRepository.update(category);
-      await this.unitOfWork.commit();
-
-      // Invalidate categories cache
-      await cacheService.invalidateCategoryCache();
-
+    const result = await this.unitOfWork.executeInTransaction(async (uow) => {
+      const repo = uow.getCategoryRepository();
+      await repo.update(category);
       return this.mapToResponseDto(category);
-    } catch (error) {
-      await this.unitOfWork.rollback();
-      throw error;
-    }
+    });
+
+    // Invalidate categories cache
+    await cacheService.invalidateCategoryCache();
+
+    return result;
   }
 
   private mapToResponseDto(category: Category): CategoryResponseDto {
@@ -124,17 +118,13 @@ export class DeleteCategoryUseCase {
       throw new Error('Cannot delete category with children');
     }
 
-    await this.unitOfWork.beginTransaction();
-    try {
-      await this.categoryRepository.delete(categoryId);
-      await this.unitOfWork.commit();
+    await this.unitOfWork.executeInTransaction(async (uow) => {
+      const repo = uow.getCategoryRepository();
+      await repo.delete(categoryId);
+    });
 
-      // Invalidate categories cache
-      await cacheService.invalidateCategoryCache();
-    } catch (error) {
-      await this.unitOfWork.rollback();
-      throw error;
-    }
+    // Invalidate categories cache
+    await cacheService.invalidateCategoryCache();
   }
 }
 

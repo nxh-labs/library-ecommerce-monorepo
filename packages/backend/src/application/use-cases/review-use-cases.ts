@@ -28,15 +28,12 @@ export class CreateReviewUseCase {
       dto.comment
     );
 
-    await this.unitOfWork.beginTransaction();
-    try {
-      await this.reviewRepository.save(review);
-      await this.unitOfWork.commit();
+    const result = await this.unitOfWork.executeInTransaction(async (uow) => {
+      const reviewRepository = uow.getReviewRepository();
+      await reviewRepository.save(review);
       return this.mapToResponseDto(review);
-    } catch (error) {
-      await this.unitOfWork.rollback();
-      throw error;
-    }
+    });
+    return result;
   }
 
   private mapToResponseDto(review: Review): ReviewResponseDto {
@@ -79,15 +76,12 @@ export class UpdateReviewUseCase {
       review.updateComment(dto.comment);
     }
 
-    await this.unitOfWork.beginTransaction();
-    try {
-      await this.reviewRepository.update(review);
-      await this.unitOfWork.commit();
+    const result = await this.unitOfWork.executeInTransaction(async (uow) => {
+      const reviewRepository = uow.getReviewRepository();
+      await reviewRepository.update(review);
       return this.mapToResponseDto(review);
-    } catch (error) {
-      await this.unitOfWork.rollback();
-      throw error;
-    }
+    });
+    return result;
   }
 
   private mapToResponseDto(review: Review): ReviewResponseDto {
@@ -123,14 +117,10 @@ export class DeleteReviewUseCase {
       throw new Error('Unauthorized to delete this review');
     }
 
-    await this.unitOfWork.beginTransaction();
-    try {
-      await this.reviewRepository.delete(reviewId);
-      await this.unitOfWork.commit();
-    } catch (error) {
-      await this.unitOfWork.rollback();
-      throw error;
-    }
+    await this.unitOfWork.executeInTransaction(async (uow) => {
+      const reviewRepository = uow.getReviewRepository();
+      await reviewRepository.delete(reviewId);
+    });
   }
 }
 

@@ -45,30 +45,30 @@ export class CreateOrderUseCase {
       dto.billingAddress
     );
 
-    await this.unitOfWork.beginTransaction();
-    try {
+    const result = await this.unitOfWork.executeInTransaction(async (uow) => {
+      const bookRepository = uow.getBookRepository();
+      const orderRepository = uow.getOrderRepository();
+      const cartRepository = uow.getCartRepository();
+
       // Decrease stock for each book
       for (const item of dto.items) {
-        await this.bookRepository.updateStock(
+        await bookRepository.updateStock(
           new BookId(item.bookId),
-          (await this.bookRepository.findById(new BookId(item.bookId)))!.getStockQuantity() - item.quantity
+          (await bookRepository.findById(new BookId(item.bookId)))!.getStockQuantity() - item.quantity
         );
       }
 
-      await this.orderRepository.save(order);
+      await orderRepository.save(order);
 
       // Clear user's cart if it exists
-      const cart = await this.cartRepository.findByUserId(userIdObj);
+      const cart = await cartRepository.findByUserId(userIdObj);
       if (cart) {
-        await this.cartRepository.clear(cart.getId());
+        await cartRepository.clear(cart.getId());
       }
 
-      await this.unitOfWork.commit();
       return this.mapToResponseDto(order);
-    } catch (error) {
-      await this.unitOfWork.rollback();
-      throw error;
-    }
+    });
+    return result;
   }
 
   private mapToResponseDto(order: Order): OrderResponseDto {
@@ -116,18 +116,15 @@ export class UpdateOrderStatusUseCase {
       throw new Error('Can only refund delivered orders');
     }
 
-    await this.unitOfWork.beginTransaction();
-    try {
-      await this.orderRepository.updateStatus(orderId, newStatus.getValue());
-      await this.unitOfWork.commit();
+    const result = await this.unitOfWork.executeInTransaction(async (uow) => {
+      const orderRepository = uow.getOrderRepository();
+      await orderRepository.updateStatus(orderId, newStatus.getValue());
+      return orderId;
+    });
 
-      // Re-fetch order to get updated status
-      const updatedOrder = await this.orderRepository.findById(orderId);
-      return this.mapToResponseDto(updatedOrder!);
-    } catch (error) {
-      await this.unitOfWork.rollback();
-      throw error;
-    }
+    // Re-fetch order to get updated status
+    const updatedOrder = await this.orderRepository.findById(result);
+    return this.mapToResponseDto(updatedOrder!);
   }
 
   private mapToResponseDto(order: Order): OrderResponseDto {
@@ -175,15 +172,12 @@ export class UpdateOrderAddressUseCase {
       order.updateBillingAddress(dto.billingAddress);
     }
 
-    await this.unitOfWork.beginTransaction();
-    try {
-      await this.orderRepository.update(order);
-      await this.unitOfWork.commit();
+    const result = await this.unitOfWork.executeInTransaction(async (uow) => {
+      const orderRepository = uow.getOrderRepository();
+      await orderRepository.update(order);
       return this.mapToResponseDto(order);
-    } catch (error) {
-      await this.unitOfWork.rollback();
-      throw error;
-    }
+    });
+    return result;
   }
 
   private mapToResponseDto(order: Order): OrderResponseDto {
