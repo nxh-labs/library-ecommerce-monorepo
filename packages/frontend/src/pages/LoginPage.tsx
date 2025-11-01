@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '../context/AppContext';
 import { LoadingSpinner, ErrorMessage } from '../components';
+import { apiService } from '../services/api';
 
 // Schéma de validation
 const loginSchema = z.object({
@@ -31,23 +32,12 @@ const LoginPage: React.FC = () => {
     try {
       setError(null);
       setLoading(true);
+   const result = await apiService.auth.login(data)
+   console.log(result)
+      // const result = await response.json();
+      // login(result.user, result.data.token);
 
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        throw new Error('Email ou mot de passe incorrect');
-      }
-
-      const result = await response.json();
-      login(result.data.user, result.data.token);
-
-      navigate('/');
+      // navigate('/');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Une erreur est survenue');
     } finally {

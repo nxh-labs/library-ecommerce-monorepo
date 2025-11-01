@@ -38,26 +38,6 @@ const RegisterPage: React.FC = () => {
       setError(null);
       setLoading(true);
       const result = await apiService.auth.register(data)
-      console.log(result)
-      // const response = await fetch('/api/auth/register', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify({
-      //     email: data.email,
-      //     password: data.password,
-      //     firstName: data.firstName,
-      //     lastName: data.lastName,
-      //   }),
-      // });
-
-      // if (!response.ok) {
-      //   const errorData = await response.json();
-      //   throw new Error(errorData.message || 'Erreur lors de l\'inscription');
-      // }
-
-      // Redirection vers la page de connexion
       navigate('/login', {
         state: { message: 'Inscription réussie ! Vous pouvez maintenant vous connecter.' }
       });
