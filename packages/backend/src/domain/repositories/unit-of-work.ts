@@ -7,9 +7,7 @@ import { ICartRepository } from './cart-repository';
 
 export interface IUnitOfWork {
   // Transaction management
-  beginTransaction(): Promise<void>;
-  commit(): Promise<void>;
-  rollback(): Promise<void>;
+  executeInTransaction<T>(work: (uow: IUnitOfWork) => Promise<T>): Promise<T>;
 
   // Repository access within transaction
   getBookRepository(): IBookRepository;
