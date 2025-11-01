@@ -1,9 +1,9 @@
 import { IUserRepository, UserId, Email, FindUsersOptions, User, UserRoleValue, UserRole } from '@/domain';
 import { CountOptions } from '@/domain/repositories/user-repository';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, UserRole as PrismaUserRole } from '@prisma/client';
 
 export class UserRepositoryPrisma implements IUserRepository {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly prisma: PrismaClient) { }
 
   async findById(id: UserId): Promise<User | null> {
     const userData = await this.prisma.user.findUnique({
@@ -107,7 +107,7 @@ export class UserRepositoryPrisma implements IUserRepository {
       userData.passwordHash,
       userData.firstName,
       userData.lastName,
-      new UserRoleValue(userData.role as UserRole),
+      new UserRoleValue(this.mapPrismaUserRoleToDomainUserRole(userData.role)),
       userData.createdAt,
       userData.updatedAt,
       userData.lastLoginAt
@@ -121,10 +121,27 @@ export class UserRepositoryPrisma implements IUserRepository {
       passwordHash: user.getPasswordHash(),
       firstName: user.getFirstName(),
       lastName: user.getLastName(),
-      role: user.getRole().getValue(),
+      role: this.mapDomainUserRoleToPrismaUserRole(user.getRole().getValue()),
       createdAt: user.getCreatedAt(),
       updatedAt: user.getUpdatedAt(),
       lastLoginAt: user.getLastLoginAt(),
     };
   }
+
+  private mapDomainUserRoleToPrismaUserRole(userRole: UserRole): PrismaUserRole {
+    switch (userRole) {
+      case UserRole.ADMIN: return PrismaUserRole.ADMIN;
+      case UserRole.CUSTOMER: return PrismaUserRole.CUSTOMER;
+      case UserRole.MANAGER: return PrismaUserRole.MANAGER;
+      default: throw new Error("user role not supported");
+    }
+  }
+  private mapPrismaUserRoleToDomainUserRole(prismaUserRole:PrismaUserRole):UserRole {
+    switch(prismaUserRole) {
+      case PrismaUserRole.ADMIN: return UserRole.ADMIN;
+      case PrismaUserRole.CUSTOMER: return UserRole.CUSTOMER;
+      case PrismaUserRole.MANAGER: return UserRole.MANAGER;
+      default: throw new Error("This user role not supported")
+    }
+  } 
 }

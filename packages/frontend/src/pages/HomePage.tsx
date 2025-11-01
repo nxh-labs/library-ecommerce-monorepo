@@ -14,10 +14,11 @@ const HomePage: React.FC = () => {
       try {
         setLoading(true);
         const response = await apiService.books.getAll({ limit: 8 });
-        setFeaturedBooks(response.data.data);
+        setFeaturedBooks(response.data || []);
       } catch (err) {
         setError('Erreur lors du chargement des livres');
         console.error('Erreur:', err);
+        setFeaturedBooks([]);
       } finally {
         setLoading(false);
       }

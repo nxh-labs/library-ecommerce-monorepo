@@ -65,7 +65,7 @@ export class BookRepositoryPrisma implements IBookRepository {
     };
 
     if (options.limit !== undefined) {
-      queryOptions.take = options.limit;
+      queryOptions.take = Number(options.limit);
     }
 
     const booksData = await this.prisma.book.findMany(queryOptions);
@@ -132,7 +132,7 @@ export class BookRepositoryPrisma implements IBookRepository {
     };
 
     if (options.limit !== undefined) {
-      queryOptions.take = options.limit;
+      queryOptions.take = Number(options.limit);
     }
 
     const booksData = await this.prisma.book.findMany(queryOptions);

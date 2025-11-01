@@ -93,6 +93,7 @@ import {
   requestSizeLimit
 } from './infrastructure/http/middlewares';
 import { PasswordService } from './infrastructure/auth/password-service';
+import { UnitOfWorkPrisma } from './infrastructure/database/unit-of-work-prisma';
 
 async function bootstrap() {
   try {
@@ -124,7 +125,7 @@ async function bootstrap() {
     let unitOfWork: IUnitOfWork;
     try {
       // TODO: Implement proper UnitOfWork
-      unitOfWork = {} as IUnitOfWork;
+      unitOfWork = new UnitOfWorkPrisma(prisma);
     } catch (error) {
       logger.error('Erreur lors de l\'instanciation de UnitOfWork', { error });
       throw error;

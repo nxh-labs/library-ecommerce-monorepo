@@ -328,7 +328,7 @@ export const apiUtils = {
   ): Promise<T | null> => {
     try {
       setState({ data: null, loading: true, error: null });
-      const result = await apiCall();
+      const result = await ();
       setState({ data: result, loading: false, error: null });
       return result;
     } catch (error) {

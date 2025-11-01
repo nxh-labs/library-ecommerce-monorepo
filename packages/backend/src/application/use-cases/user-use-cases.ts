@@ -35,10 +35,11 @@ export class CreateUserUseCase {
 
     await this.unitOfWork.beginTransaction();
     try {
-      await this.userRepository.save(user);
+      await this.unitOfWork.getUserRepository().save(user);
       await this.unitOfWork.commit();
       return this.mapToResponseDto(user);
     } catch (error) {
+      console.error(error)
       await this.unitOfWork.rollback();
       throw error;
     }
