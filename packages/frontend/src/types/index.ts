@@ -37,7 +37,11 @@ export interface Category {
   createdAt: string;
   updatedAt: string;
 }
-
+export interface CategoryHierarchy {
+  id: string;
+  name: string;
+  children: CategoryHierarchy[];
+}
 export interface Cart {
   id: string;
   userId: string;
@@ -54,6 +58,15 @@ export interface CartItem {
   quantity: number;
   addedAt: string;
   book?: Book;
+}
+export interface CartResponseDto {
+  id: string;
+  userId: string;
+  items: CartItem[];
+  totalItems: number;
+  estimatedTotalPrice: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Order {
@@ -195,4 +208,9 @@ export interface PaginatedResponse<T> {
   page: number;
   limit: number;
   totalPages: number;
+}
+
+export interface ApiErrorData {
+  error: string;
+  message: string;
 }

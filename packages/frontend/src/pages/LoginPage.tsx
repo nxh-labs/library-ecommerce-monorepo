@@ -1,16 +1,19 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { useAuth } from '../context/AppContext';
-import { LoadingSpinner, ErrorMessage } from '../components';
-import { apiService } from '../services/api';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useAuth } from "../context/AppContext";
+import { LoadingSpinner, ErrorMessage } from "../components";
+import { apiService } from "../services/api";
+import { AxiosError } from "axios";
 
 // Schéma de validation
 const loginSchema = z.object({
-  email: z.string().email('Email invalide'),
-  password: z.string().min(6, 'Le mot de passe doit contenir au moins 6 caractères'),
+  email: z.string().email("Email invalide"),
+  password: z
+    .string()
+    .min(6, "Le mot de passe doit contenir au moins 6 caractères"),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -32,19 +35,20 @@ const LoginPage: React.FC = () => {
     try {
       setError(null);
       setLoading(true);
-   const result = await apiService.auth.login(data)
-   console.log(result)
-      // const result = await response.json();
-      // login(result.user, result.data.token);
-
-      // navigate('/');
+      const result = await apiService.auth.login(data);
+      login(result.data.user, result.data.token);
+      navigate("/");
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Une erreur est survenue');
+      if(err instanceof AxiosError) {
+        const {response} = err
+       setError(`${response?.data.message}`)
+      }else {
+        setError(err instanceof Error ? err.message : "Une erreur est survenue");
+      }
     } finally {
       setLoading(false);
     }
   };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -53,7 +57,7 @@ const LoginPage: React.FC = () => {
             Connexion à votre compte
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Ou{' '}
+            Ou{" "}
             <Link
               to="/register"
               className="font-medium text-blue-600 hover:text-blue-500"
@@ -72,7 +76,7 @@ const LoginPage: React.FC = () => {
                 Adresse email
               </label>
               <input
-                {...register('email')}
+                {...register("email")}
                 id="email"
                 name="email"
                 type="email"
@@ -82,7 +86,9 @@ const LoginPage: React.FC = () => {
                 placeholder="Adresse email"
               />
               {errors.email && (
-                <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.email.message}
+                </p>
               )}
             </div>
 
@@ -91,7 +97,7 @@ const LoginPage: React.FC = () => {
                 Mot de passe
               </label>
               <input
-                {...register('password')}
+                {...register("password")}
                 id="password"
                 name="password"
                 type="password"
@@ -101,7 +107,9 @@ const LoginPage: React.FC = () => {
                 placeholder="Mot de passe"
               />
               {errors.password && (
-                <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.password.message}
+                </p>
               )}
             </div>
           </div>
@@ -114,13 +122,19 @@ const LoginPage: React.FC = () => {
                 type="checkbox"
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
-              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
+              <label
+                htmlFor="remember-me"
+                className="ml-2 block text-sm text-gray-900"
+              >
                 Se souvenir de moi
               </label>
             </div>
 
             <div className="text-sm">
-              <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
+              <a
+                href="#"
+                className="font-medium text-blue-600 hover:text-blue-500"
+              >
                 Mot de passe oublié ?
               </a>
             </div>
@@ -132,9 +146,7 @@ const LoginPage: React.FC = () => {
               disabled={loading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? (
-                <LoadingSpinner size="sm" className="mr-2" />
-              ) : null}
+              {loading ? <LoadingSpinner size="sm" className="mr-2" /> : null}
               Se connecter
             </button>
           </div>

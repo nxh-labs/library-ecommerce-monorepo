@@ -1,22 +1,29 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { LoadingSpinner, ErrorMessage } from '../components';
-import { apiService } from '../services/api';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { LoadingSpinner, ErrorMessage } from "../components";
+import { apiService } from "../services/api";
+import { AxiosError } from "axios";
 
 // Schéma de validation
-const registerSchema = z.object({
-  email: z.string().email('Email invalide'),
-  password: z.string().min(6, 'Le mot de passe doit contenir au moins 6 caractères'),
-  confirmPassword: z.string(),
-  firstName: z.string().min(2, 'Le prénom doit contenir au moins 2 caractères'),
-  lastName: z.string().min(2, 'Le nom doit contenir au moins 2 caractères'),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'Les mots de passe ne correspondent pas',
-  path: ['confirmPassword'],
-});
+const registerSchema = z
+  .object({
+    email: z.string().email("Email invalide"),
+    password: z
+      .string()
+      .min(6, "Le mot de passe doit contenir au moins 6 caractères"),
+    confirmPassword: z.string(),
+    firstName: z
+      .string()
+      .min(2, "Le prénom doit contenir au moins 2 caractères"),
+    lastName: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Les mots de passe ne correspondent pas",
+    path: ["confirmPassword"],
+  });
 
 type RegisterFormData = z.infer<typeof registerSchema>;
 
@@ -37,12 +44,22 @@ const RegisterPage: React.FC = () => {
     try {
       setError(null);
       setLoading(true);
-      const result = await apiService.auth.register(data)
-      navigate('/login', {
-        state: { message: 'Inscription réussie ! Vous pouvez maintenant vous connecter.' }
+      await apiService.auth.register(data);
+      navigate("/login", {
+        state: {
+          message:
+            "Inscription réussie ! Vous pouvez maintenant vous connecter.",
+        },
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Une erreur est survenue');
+      if (err instanceof AxiosError) {
+        const { response } = err;
+        setError(`${response?.data.message}`);
+      } else {
+        setError(
+          err instanceof Error ? err.message : "Une erreur est survenue"
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -56,7 +73,7 @@ const RegisterPage: React.FC = () => {
             Créer un compte
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Ou{' '}
+            Ou{" "}
             <Link
               to="/login"
               className="font-medium text-blue-600 hover:text-blue-500"
@@ -76,7 +93,7 @@ const RegisterPage: React.FC = () => {
                 Prénom
               </label>
               <input
-                {...register('firstName')}
+                {...register("firstName")}
                 id="firstName"
                 name="firstName"
                 type="text"
@@ -85,7 +102,9 @@ const RegisterPage: React.FC = () => {
                 placeholder="Prénom"
               />
               {errors.firstName && (
-                <p className="mt-1 text-sm text-red-600">{errors.firstName.message}</p>
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.firstName.message}
+                </p>
               )}
             </div>
 
@@ -95,7 +114,7 @@ const RegisterPage: React.FC = () => {
                 Nom
               </label>
               <input
-                {...register('lastName')}
+                {...register("lastName")}
                 id="lastName"
                 name="lastName"
                 type="text"
@@ -104,7 +123,9 @@ const RegisterPage: React.FC = () => {
                 placeholder="Nom"
               />
               {errors.lastName && (
-                <p className="mt-1 text-sm text-red-600">{errors.lastName.message}</p>
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.lastName.message}
+                </p>
               )}
             </div>
 
@@ -114,7 +135,7 @@ const RegisterPage: React.FC = () => {
                 Adresse email
               </label>
               <input
-                {...register('email')}
+                {...register("email")}
                 id="email"
                 name="email"
                 type="email"
@@ -124,7 +145,9 @@ const RegisterPage: React.FC = () => {
                 placeholder="Adresse email"
               />
               {errors.email && (
-                <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.email.message}
+                </p>
               )}
             </div>
 
@@ -134,7 +157,7 @@ const RegisterPage: React.FC = () => {
                 Mot de passe
               </label>
               <input
-                {...register('password')}
+                {...register("password")}
                 id="password"
                 name="password"
                 type="password"
@@ -144,7 +167,9 @@ const RegisterPage: React.FC = () => {
                 placeholder="Mot de passe"
               />
               {errors.password && (
-                <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.password.message}
+                </p>
               )}
             </div>
 
@@ -154,7 +179,7 @@ const RegisterPage: React.FC = () => {
                 Confirmer le mot de passe
               </label>
               <input
-                {...register('confirmPassword')}
+                {...register("confirmPassword")}
                 id="confirmPassword"
                 name="confirmPassword"
                 type="password"
@@ -164,7 +189,9 @@ const RegisterPage: React.FC = () => {
                 placeholder="Confirmer le mot de passe"
               />
               {errors.confirmPassword && (
-                <p className="mt-1 text-sm text-red-600">{errors.confirmPassword.message}</p>
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.confirmPassword.message}
+                </p>
               )}
             </div>
           </div>
@@ -175,19 +202,17 @@ const RegisterPage: React.FC = () => {
               disabled={loading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? (
-                <LoadingSpinner size="sm" className="mr-2" />
-              ) : null}
+              {loading ? <LoadingSpinner size="sm" className="mr-2" /> : null}
               S'inscrire
             </button>
           </div>
 
           <div className="text-sm text-center text-gray-600">
-            En vous inscrivant, vous acceptez nos{' '}
+            En vous inscrivant, vous acceptez nos{" "}
             <Link to="/terms" className="text-blue-600 hover:text-blue-500">
               conditions d'utilisation
-            </Link>{' '}
-            et notre{' '}
+            </Link>{" "}
+            et notre{" "}
             <Link to="/privacy" className="text-blue-600 hover:text-blue-500">
               politique de confidentialité
             </Link>

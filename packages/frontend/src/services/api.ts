@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
-import { ApiResponse, PaginatedResponse } from '../types';
+import { ApiErrorData, ApiResponse, Book, Cart, CartItem, CartResponseDto, CartSummary, Category, CategoryHierarchy, CreateBookDto, CreateCategoryDto, CreateOrderDto, Order, PaginatedResponse, Review, User } from '../types';
 
 // Configuration de base de l'API
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
@@ -16,6 +16,12 @@ const api: AxiosInstance = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+// Callback (hook) externe pour gérer le 401 globalement
+let onUnauthorized: null | (() => void) = null;
+export function setOnUnauthorizedHandler(handler: () => void) {
+  onUnauthorized = handler;
+}
 
 // Interceptor pour ajouter le token d'authentification
 api.interceptors.request.use(
@@ -38,7 +44,6 @@ api.interceptors.response.use(
   },
   async (error) => {
     const originalRequest = error.config;
-
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
@@ -61,7 +66,7 @@ api.interceptors.response.use(
           localStorage.removeItem(TOKEN_KEY);
           localStorage.removeItem(REFRESH_TOKEN_KEY);
           localStorage.removeItem('user');
-          window.location.href = '/login';
+          if (onUnauthorized) onUnauthorized();
           return Promise.reject(refreshError);
         }
       } else {
@@ -69,7 +74,7 @@ api.interceptors.response.use(
         localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem(REFRESH_TOKEN_KEY);
         localStorage.removeItem('user');
-        window.location.href = '/login';
+        if (onUnauthorized) onUnauthorized();
       }
     }
 
@@ -82,22 +87,22 @@ export const apiService = {
   // Authentification
   auth: {
     login: (credentials: { email: string; password: string }) =>
-      api.post<ApiResponse<{ user: any; token: string; refreshToken: string }>>('/auth/login', credentials),
+      api.post<{ user: User; token: string; refreshToken: string }>('/auth/login', credentials),
 
     register: (userData: { email: string; password: string; firstName: string; lastName: string }) =>
-      api.post<ApiResponse<{ user: any; token: string; refreshToken: string }>>('/users/register', userData),
+      api.post<{ user: User; token: string; refreshToken: string }>('/users/register', userData),
 
     getProfile: () =>
-      api.get<ApiResponse<any>>('/users/me'),
+      api.get<User>('/users/me'),
 
     updateProfile: (userData: Partial<any>) =>
-      api.put<ApiResponse<any>>('/users/me', userData),
+      api.put<User>('/users/me', userData),
 
     refreshToken: (refreshToken: string) =>
-      api.post<ApiResponse<{ user: any; token: string; refreshToken: string }>>('/auth/refresh', { refreshToken }),
+      api.post<{ user: User; token: string; refreshToken: string }>('/auth/refresh', { refreshToken }),
 
     logout: () =>
-      api.post<ApiResponse<void>>('/auth/logout'),
+      api.post<{ message: string }, ApiErrorData>('/auth/logout'),
   },
 
   // Livres
@@ -112,7 +117,7 @@ export const apiService = {
       offset?: number;
       cursor?: string;
     }) =>
-      api.get<PaginatedResponse<any>>('/books', { params }),
+      api.get<Book[]>('/books', { params }),
 
     search: (params: {
       query: string;
@@ -125,22 +130,22 @@ export const apiService = {
       offset?: number;
       cursor?: string;
     }) =>
-      api.get<PaginatedResponse<any>>('/books/search', { params }),
+      api.get<Book[]>('/books/search', { params }),
 
     getById: (id: string) =>
-      api.get<ApiResponse<any>>(`/books/${id}`),
+      api.get<Book>(`/books/${id}`),
 
-    create: (bookData: any) =>
-      api.post<ApiResponse<any>>('/books', bookData),
+    create: (bookData: CreateBookDto) =>
+      api.post<Book, ApiErrorData>('/books', bookData),
 
-    update: (id: string, bookData: Partial<any>) =>
-      api.put<ApiResponse<any>>(`/books/${id}`, bookData),
+    update: (id: string, bookData: Partial<CreateBookDto>) =>
+      api.put<Book, ApiErrorData>(`/books/${id}`, bookData),
 
     delete: (id: string) =>
-      api.delete<ApiResponse<void>>(`/books/${id}`),
+      api.delete<void, ApiErrorData>(`/books/${id}`),
 
     updateStock: (id: string, stockQuantity: number) =>
-      api.patch<ApiResponse<void>>(`/books/${id}/stock`, { stockQuantity }),
+      api.patch<void, ApiErrorData>(`/books/${id}/stock`, { stockQuantity }),
   },
 
   // Catégories
@@ -153,43 +158,43 @@ export const apiService = {
       limit?: number;
       offset?: number;
     }) =>
-      api.get<PaginatedResponse<any>>('/categories', { params }),
+      api.get<Category[]>('/categories', { params }),
 
     getHierarchy: () =>
-      api.get<ApiResponse<any[]>>('/categories/hierarchy'),
+      api.get<CategoryHierarchy[]>('/categories/hierarchy'),
 
     getById: (id: string) =>
-      api.get<ApiResponse<any>>(`/categories/${id}`),
+      api.get<Category, ApiErrorData>(`/categories/${id}`),
 
-    create: (categoryData: any) =>
-      api.post<ApiResponse<any>>('/categories', categoryData),
+    create: (categoryData: CreateCategoryDto) =>
+      api.post<Category, ApiErrorData>('/categories', categoryData),
 
-    update: (id: string, categoryData: Partial<any>) =>
-      api.put<ApiResponse<any>>(`/categories/${id}`, categoryData),
+    update: (id: string, categoryData: Partial<CreateCategoryDto>) =>
+      api.put<Category, ApiErrorData>(`/categories/${id}`, categoryData),
 
     delete: (id: string) =>
-      api.delete<ApiResponse<void>>(`/categories/${id}`),
+      api.delete<void, ApiErrorData>(`/categories/${id}`),
   },
 
   // Panier
   cart: {
     get: () =>
-      api.get<ApiResponse<any>>('/cart'),
+      api.get<Cart, ApiErrorData>('/cart'),
 
     getSummary: () =>
-      api.get<ApiResponse<any>>('/cart/summary'),
+      api.get<CartSummary, ApiErrorData>('/cart/summary'),
 
     addItem: (bookId: string, quantity: number) =>
-      api.post<ApiResponse<any>>('/cart/items', { bookId, quantity }),
+      api.post<CartResponseDto, ApiErrorData>('/cart/items', { bookId, quantity }),
 
     updateItem: (itemId: string, quantity: number) =>
-      api.put<ApiResponse<any>>(`/cart/items/${itemId}`, { quantity }),
+      api.put<CartResponseDto, ApiErrorData>(`/cart/items/${itemId}`, { quantity }),
 
     removeItem: (bookId: string) =>
-      api.delete<ApiResponse<any>>(`/cart/items/${bookId}`),
+      api.delete<CartResponseDto, ApiErrorData>(`/cart/items/${bookId}`),
 
     clear: () =>
-      api.delete<ApiResponse<void>>('/cart'),
+      api.delete<void, ApiErrorData>('/cart'),
   },
 
   // Commandes
@@ -203,19 +208,19 @@ export const apiService = {
       limit?: number;
       offset?: number;
     }) =>
-      api.get<PaginatedResponse<any>>('/orders', { params }),
+      api.get<Order[], ApiErrorData>('/orders', { params }),
 
     getById: (id: string) =>
-      api.get<ApiResponse<any>>(`/orders/${id}`),
+      api.get<Order, ApiErrorData>(`/orders/${id}`),
 
-    create: (orderData: any) =>
-      api.post<ApiResponse<any>>('/orders', orderData),
+    create: (orderData: CreateOrderDto) =>
+      api.post<Order, ApiErrorData>('/orders', orderData),
 
     updateAddress: (id: string, addressData: any) =>
-      api.put<ApiResponse<any>>(`/orders/${id}/address`, addressData),
+      api.put<Order, ApiErrorData>(`/orders/${id}/address`, addressData),
 
     updateStatus: (id: string, status: string) =>
-      api.put<ApiResponse<any>>(`/orders/${id}/status`, { status }),
+      api.put<Order, ApiErrorData>(`/orders/${id}/status`, { status }),
   },
 
   // Avis
@@ -227,22 +232,26 @@ export const apiService = {
       limit?: number;
       offset?: number;
     }) =>
-      api.get<PaginatedResponse<any>>(`/reviews/book/${bookId}`, { params }),
+      api.get<Review, ApiErrorData>(`/reviews/book/${bookId}`, { params }),
 
     getBookRating: (bookId: string) =>
-      api.get<ApiResponse<any>>(`/reviews/book/${bookId}/rating`),
+      api.get<{
+        bookId: string,
+        averageRating: number,
+        totalReviews: number
+      }, ApiErrorData>(`/reviews/book/${bookId}/rating`),
 
     getById: (id: string) =>
-      api.get<ApiResponse<any>>(`/reviews/${id}`),
+      api.get<Review, ApiErrorData>(`/reviews/${id}`),
 
     create: (reviewData: { bookId: string; rating: number; comment: string }) =>
-      api.post<ApiResponse<any>>('/reviews', reviewData),
+      api.post<Review, ApiErrorData>('/reviews', reviewData),
 
     update: (id: string, reviewData: Partial<{ rating: number; comment: string }>) =>
-      api.put<ApiResponse<any>>(`/reviews/${id}`, reviewData),
+      api.put<Review, ApiErrorData>(`/reviews/${id}`, reviewData),
 
     delete: (id: string) =>
-      api.delete<ApiResponse<void>>(`/reviews/${id}`),
+      api.delete<void, ApiErrorData>(`/reviews/${id}`),
 
     getUserReviews: (params?: {
       rating?: number;
@@ -251,7 +260,7 @@ export const apiService = {
       limit?: number;
       offset?: number;
     }) =>
-      api.get<PaginatedResponse<any>>('/reviews/user/reviews', { params }),
+      api.get<Review[],ApiErrorData>('/reviews/user/reviews', { params }),
   },
 
   // Utilisateurs (Admin seulement)
@@ -264,19 +273,19 @@ export const apiService = {
       limit?: number;
       offset?: number;
     }) =>
-      api.get<PaginatedResponse<any>>('/users', { params }),
+      api.get<User[],ApiErrorData>('/users', { params }),
 
     getById: (id: string) =>
-      api.get<ApiResponse<any>>(`/users/${id}`),
+      api.get<User,ApiErrorData>(`/users/${id}`),
 
-    update: (id: string, userData: Partial<any>) =>
-      api.put<ApiResponse<any>>(`/users/${id}`, userData),
+    update: (id: string, userData: Partial<Omit<User,'id' | 'createAt' | "updatedAt">>) =>
+      api.put<User,ApiErrorData>(`/users/${id}`, userData),
 
     delete: (id: string) =>
-      api.delete<ApiResponse<void>>(`/users/${id}`),
+      api.delete<void ,ApiErrorData>(`/users/${id}`),
 
     changePassword: (currentPassword: string, newPassword: string) =>
-      api.put<ApiResponse<void>>('/users/me/password', { currentPassword, newPassword }),
+      api.put<void,ApiErrorData>('/users/me/password', { currentPassword, newPassword }),
   },
 };
 
