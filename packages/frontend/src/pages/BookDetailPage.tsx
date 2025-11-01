@@ -41,7 +41,7 @@ const BookDetailPage: React.FC = () => {
       try {
         setLoading(true);
         const response = await apiService.books.getById(id);
-        setBook(response.data.data);
+        setBook(response.data);
       } catch (err) {
         setError('Erreur lors du chargement du livre');
         console.error('Erreur:', err);
@@ -54,7 +54,7 @@ const BookDetailPage: React.FC = () => {
       try {
         setReviewsLoading(true);
         const response = await apiService.reviews.getByBook(id);
-        setReviews(response.data.data);
+        setReviews(response.data);
       } catch (err) {
         console.error('Erreur lors du chargement des avis:', err);
       } finally {
@@ -87,8 +87,9 @@ const BookDetailPage: React.FC = () => {
     // Recharger les avis
     try {
       setReviewsLoading(true);
+      if(!id) throw new Error('id must be provided')
       const response = await apiService.reviews.getByBook(id);
-      setReviews(response.data.data);
+      setReviews(response.data);
     } catch (err) {
       console.error('Erreur lors du rechargement des avis:', err);
     } finally {
@@ -206,7 +207,7 @@ const BookDetailPage: React.FC = () => {
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center space-x-2">
                       <span className="font-semibold text-gray-900">
-                        {review.user.firstName} {review.user.lastName}
+                        {review.user?.firstName} {review.user?.lastName}
                       </span>
                       <div className="flex items-center">
                         {Array.from({ length: 5 }, (_, i) => (

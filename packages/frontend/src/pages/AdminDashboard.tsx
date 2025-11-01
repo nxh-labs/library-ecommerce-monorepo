@@ -31,14 +31,14 @@ const AdminDashboard: React.FC = () => {
           apiService.categories.getAll(),
         ]);
 
-        setStats({
-          totalBooks: booksRes.data.total,
-          totalUsers: usersRes.data.total,
-          totalOrders: ordersRes.data.total,
-          totalCategories: categoriesRes.data.data.length,
-        });
+        // setStats({
+        //   totalBooks: booksRes.data,
+        //   totalUsers: usersRes.data.total,
+        //   totalOrders: ordersRes.data.total,
+        //   totalCategories: categoriesRes.data.data.length,
+        // });
 
-        setRecentOrders(ordersRes.data.data);
+        setRecentOrders(ordersRes.data);
       } catch (err) {
         setError('Erreur lors du chargement des données');
         console.error('Erreur:', err);
@@ -155,7 +155,7 @@ const AdminDashboard: React.FC = () => {
                       Commande #{order.id.slice(-8)}
                     </p>
                     <p className="text-sm text-gray-600">
-                      {order.user.firstName} {order.user.lastName} • {order.items.length} article{order.items.length > 1 ? 's' : ''}
+                      {order.user?.firstName} {order.user?.lastName} • {order.items.length} article{order.items.length > 1 ? 's' : ''}
                     </p>
                   </div>
                   <div className="text-right">

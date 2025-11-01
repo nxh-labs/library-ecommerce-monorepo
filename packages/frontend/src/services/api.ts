@@ -102,7 +102,7 @@ export const apiService = {
       api.post<{ user: User; token: string; refreshToken: string }>('/auth/refresh', { refreshToken }),
 
     logout: () =>
-      api.post<{ message: string }, ApiErrorData>('/auth/logout'),
+      api.post<{ message: string } >('/auth/logout'),
   },
 
   // Livres
@@ -136,16 +136,16 @@ export const apiService = {
       api.get<Book>(`/books/${id}`),
 
     create: (bookData: CreateBookDto) =>
-      api.post<Book, ApiErrorData>('/books', bookData),
+      api.post<Book >('/books', bookData),
 
     update: (id: string, bookData: Partial<CreateBookDto>) =>
-      api.put<Book, ApiErrorData>(`/books/${id}`, bookData),
+      api.put<Book >(`/books/${id}`, bookData),
 
     delete: (id: string) =>
-      api.delete<void, ApiErrorData>(`/books/${id}`),
+      api.delete<void >(`/books/${id}`),
 
     updateStock: (id: string, stockQuantity: number) =>
-      api.patch<void, ApiErrorData>(`/books/${id}/stock`, { stockQuantity }),
+      api.patch<void >(`/books/${id}/stock`, { stockQuantity }),
   },
 
   // Catégories
@@ -164,37 +164,37 @@ export const apiService = {
       api.get<CategoryHierarchy[]>('/categories/hierarchy'),
 
     getById: (id: string) =>
-      api.get<Category, ApiErrorData>(`/categories/${id}`),
+      api.get<Category >(`/categories/${id}`),
 
     create: (categoryData: CreateCategoryDto) =>
-      api.post<Category, ApiErrorData>('/categories', categoryData),
+      api.post<Category >('/categories', categoryData),
 
     update: (id: string, categoryData: Partial<CreateCategoryDto>) =>
-      api.put<Category, ApiErrorData>(`/categories/${id}`, categoryData),
+      api.put<Category >(`/categories/${id}`, categoryData),
 
     delete: (id: string) =>
-      api.delete<void, ApiErrorData>(`/categories/${id}`),
+      api.delete<void >(`/categories/${id}`),
   },
 
   // Panier
   cart: {
     get: () =>
-      api.get<Cart, ApiErrorData>('/cart'),
+      api.get<Cart >('/cart'),
 
     getSummary: () =>
-      api.get<CartSummary, ApiErrorData>('/cart/summary'),
+      api.get<CartSummary >('/cart/summary'),
 
     addItem: (bookId: string, quantity: number) =>
-      api.post<CartResponseDto, ApiErrorData>('/cart/items', { bookId, quantity }),
+      api.post<CartResponseDto >('/cart/items', { bookId, quantity }),
 
     updateItem: (itemId: string, quantity: number) =>
-      api.put<CartResponseDto, ApiErrorData>(`/cart/items/${itemId}`, { quantity }),
+      api.put<CartResponseDto >(`/cart/items/${itemId}`, { quantity }),
 
     removeItem: (bookId: string) =>
-      api.delete<CartResponseDto, ApiErrorData>(`/cart/items/${bookId}`),
+      api.delete<CartResponseDto >(`/cart/items/${bookId}`),
 
     clear: () =>
-      api.delete<void, ApiErrorData>('/cart'),
+      api.delete<void >('/cart'),
   },
 
   // Commandes
@@ -208,19 +208,19 @@ export const apiService = {
       limit?: number;
       offset?: number;
     }) =>
-      api.get<Order[], ApiErrorData>('/orders', { params }),
+      api.get<Order[] >('/orders', { params }),
 
     getById: (id: string) =>
-      api.get<Order, ApiErrorData>(`/orders/${id}`),
+      api.get<Order >(`/orders/${id}`),
 
     create: (orderData: CreateOrderDto) =>
-      api.post<Order, ApiErrorData>('/orders', orderData),
+      api.post<Order >('/orders', orderData),
 
     updateAddress: (id: string, addressData: any) =>
-      api.put<Order, ApiErrorData>(`/orders/${id}/address`, addressData),
+      api.put<Order >(`/orders/${id}/address`, addressData),
 
     updateStatus: (id: string, status: string) =>
-      api.put<Order, ApiErrorData>(`/orders/${id}/status`, { status }),
+      api.put<Order >(`/orders/${id}/status`, { status }),
   },
 
   // Avis
@@ -232,26 +232,26 @@ export const apiService = {
       limit?: number;
       offset?: number;
     }) =>
-      api.get<Review, ApiErrorData>(`/reviews/book/${bookId}`, { params }),
+      api.get<Review[] >(`/reviews/book/${bookId}`, { params }),
 
     getBookRating: (bookId: string) =>
       api.get<{
         bookId: string,
         averageRating: number,
         totalReviews: number
-      }, ApiErrorData>(`/reviews/book/${bookId}/rating`),
+      } >(`/reviews/book/${bookId}/rating`),
 
     getById: (id: string) =>
-      api.get<Review, ApiErrorData>(`/reviews/${id}`),
+      api.get<Review >(`/reviews/${id}`),
 
     create: (reviewData: { bookId: string; rating: number; comment: string }) =>
-      api.post<Review, ApiErrorData>('/reviews', reviewData),
+      api.post<Review >('/reviews', reviewData),
 
     update: (id: string, reviewData: Partial<{ rating: number; comment: string }>) =>
-      api.put<Review, ApiErrorData>(`/reviews/${id}`, reviewData),
+      api.put<Review >(`/reviews/${id}`, reviewData),
 
     delete: (id: string) =>
-      api.delete<void, ApiErrorData>(`/reviews/${id}`),
+      api.delete<void >(`/reviews/${id}`),
 
     getUserReviews: (params?: {
       rating?: number;

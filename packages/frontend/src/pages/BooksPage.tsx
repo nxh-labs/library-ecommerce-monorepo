@@ -17,7 +17,7 @@ const BooksPage: React.FC = () => {
     const fetchCategories = async () => {
       try {
         const response = await apiService.categories.getAll();
-        setCategories(response.data.data);
+        setCategories(response.data);
       } catch (err) {
         console.error('Erreur lors du chargement des catégories:', err);
       }
@@ -44,8 +44,8 @@ const BooksPage: React.FC = () => {
         }
 
         const response = await apiService.books.getAll(params);
-        setBooks(response.data.data);
-        setTotalPages(response.data.totalPages);
+        setBooks(response.data);
+        setTotalPages(0);
       } catch (err) {
         setError('Erreur lors du chargement des livres');
         console.error('Erreur:', err);
