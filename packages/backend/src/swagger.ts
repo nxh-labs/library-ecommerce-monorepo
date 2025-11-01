@@ -1,3 +1,4 @@
+import path from 'path';
 import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 
@@ -143,7 +144,7 @@ const options = {
       },
     ],
   },
-  apis: ['./src/presentation/routes/*.ts'], // Chemins vers les fichiers contenant les annotations Swagger
+  apis: [path.resolve(__dirname, './presentation/routes/*.ts')],
 };
 
 const specs = swaggerJSDoc(options);
