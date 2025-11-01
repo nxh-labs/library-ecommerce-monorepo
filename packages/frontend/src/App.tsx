@@ -16,7 +16,7 @@ function App() {
   return (
     <AppProvider>
       <Router>
-        <div className="min-h-screen flex flex-col">
+        <div className="min-h-screen flex flex-col min-w-screen">
           <Header />
           <main className="flex-1">
             <Routes>

@@ -2,7 +2,7 @@ import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 
 import { ApiResponse, PaginatedResponse } from '../types';
 
 // Configuration de base de l'API
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 // Configuration pour les tokens
 const TOKEN_KEY = 'auth_token';

@@ -135,7 +135,7 @@ export function authorize(allowedRoles: UserRole[]) {
 }
 
 export function corsHandler(req: Request, res: Response, next: NextFunction) {
-  const allowedOrigins = process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3000'];
+  const allowedOrigins = process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3000','http://localhost:5173'];
   const origin = req.headers.origin;
 
   if (allowedOrigins.includes(origin as string) || process.env.NODE_ENV === 'development') {
