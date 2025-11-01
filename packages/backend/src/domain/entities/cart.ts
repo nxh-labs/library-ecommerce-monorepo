@@ -1,10 +1,11 @@
 import { UserId } from './user';
 import { Price } from '../value-objects/price';
+import { ValidationError } from '../errors';
 
 export class CartId {
   constructor(private readonly value: string) {
     if (!value || value.trim().length === 0) {
-      throw new Error('Cart ID cannot be empty');
+      throw new ValidationError('Cart ID cannot be empty');
     }
   }
 
@@ -24,7 +25,7 @@ export class CartId {
 export class CartItemId {
   constructor(private readonly value: string) {
     if (!value || value.trim().length === 0) {
-      throw new Error('Cart item ID cannot be empty');
+      throw new ValidationError('Cart item ID cannot be empty');
     }
   }
 
@@ -54,10 +55,10 @@ export class CartItem {
     addedAt?: Date
   ) {
     if (!bookId || bookId.trim().length === 0) {
-      throw new Error('Book ID cannot be empty');
+      throw new ValidationError('Book ID cannot be empty');
     }
     if (quantity <= 0) {
-      throw new Error('Quantity must be positive');
+      throw new ValidationError('Quantity must be positive');
     }
 
     this.id = id;
@@ -84,14 +85,14 @@ export class CartItem {
 
   updateQuantity(newQuantity: number): void {
     if (newQuantity <= 0) {
-      throw new Error('Quantity must be positive');
+      throw new ValidationError('Quantity must be positive');
     }
     this.quantity = newQuantity;
   }
 
   increaseQuantity(amount: number): void {
     if (amount <= 0) {
-      throw new Error('Amount to increase must be positive');
+      throw new ValidationError('Amount to increase must be positive');
     }
     this.quantity += amount;
   }
@@ -196,7 +197,7 @@ export class Cart {
 
     const itemIndex = this.items.findIndex(item => item.getBookId() === bookId);
     if (itemIndex < 0) {
-      throw new Error('Item not found in cart');
+      throw new ValidationError('Item not found in cart');
     }
 
     const updatedItems = [...this.items];
@@ -214,7 +215,7 @@ export class Cart {
   removeItem(bookId: string): Cart {
     const filteredItems = this.items.filter(item => item.getBookId() !== bookId);
     if (filteredItems.length === this.items.length) {
-      throw new Error('Item not found in cart');
+      throw new ValidationError('Item not found in cart');
     }
 
     return new Cart(
@@ -242,7 +243,7 @@ export class Cart {
     return this.items.reduce((total, item) => {
       const bookPrice = bookPrices.get(item.getBookId());
       if (!bookPrice) {
-        throw new Error(`Price not found for book ${item.getBookId()}`);
+        throw new ValidationError(`Price not found for book ${item.getBookId()}`);
       }
       return total.add(bookPrice.multiply(item.getQuantity()));
     }, new Price(0));

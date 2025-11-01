@@ -1,9 +1,11 @@
+import { ValidationError } from '../errors';
+
 export class Email {
   private readonly value: string;
 
   constructor(value: string) {
     if (!this.isValidEmail(value)) {
-      throw new Error('Invalid email format');
+      throw new ValidationError('Invalid email format');
     }
     this.value = value.toLowerCase().trim();
   }

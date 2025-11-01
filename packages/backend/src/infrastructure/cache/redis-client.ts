@@ -1,4 +1,5 @@
 import { createClient, RedisClientType } from 'redis';
+import { InternalServerError } from '../../domain/errors';
 
 export class RedisClient {
   private static instance: RedisClient;
@@ -10,7 +11,7 @@ export class RedisClient {
     });
 
     this.client.on('error', (err) => {
-      console.error('Redis Client Error', err);
+      throw new InternalServerError('Redis client connection error');
     });
 
     this.client.on('connect', () => {

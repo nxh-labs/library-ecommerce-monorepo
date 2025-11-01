@@ -1,4 +1,6 @@
 // Strategy pattern for payment processing
+import { InternalServerError } from '@/domain/errors';
+
 export interface PaymentStrategy {
   processPayment(amount: number, paymentData: any): Promise<PaymentResult>;
   refundPayment(transactionId: string, amount: number): Promise<RefundResult>;
@@ -180,7 +182,7 @@ export class PaymentStrategyFactory {
       case PaymentMethod.BANK_TRANSFER:
         return new BankTransferPaymentStrategy();
       default:
-        throw new Error(`Unsupported payment method: ${method}`);
+        throw new InternalServerError(`Unsupported payment method: ${method}`);
     }
   }
 }

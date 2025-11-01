@@ -1,15 +1,6 @@
 import { z } from 'zod';
 import { Request, Response, NextFunction } from 'express';
-
-export class ValidationError extends Error {
-  constructor(
-    public errors: z.ZodError['issues'],
-    message = 'Validation failed'
-  ) {
-    super(message);
-    this.name = 'ValidationError';
-  }
-}
+import { ValidationError } from '../../domain/errors';
 
 export function validateRequest(schema: z.ZodSchema) {
   return (req: Request, res: Response, next: NextFunction) => {
@@ -19,7 +10,7 @@ export function validateRequest(schema: z.ZodSchema) {
       next();
     } catch (error) {
       if (error instanceof z.ZodError) {
-        next(new ValidationError(error.issues));
+        next(new ValidationError(error.issues.map(issue => issue.message).join(', ')));
       } else {
         next(error);
       }
@@ -35,7 +26,7 @@ export function validateQuery(schema: z.ZodSchema) {
       next();
     } catch (error) {
       if (error instanceof z.ZodError) {
-        next(new ValidationError(error.issues));
+        next(new ValidationError(error.issues.map(issue => issue.message).join(', ')));
       } else {
         next(error);
       }
@@ -51,7 +42,7 @@ export function validateParams(schema: z.ZodSchema) {
       next();
     } catch (error) {
       if (error instanceof z.ZodError) {
-        next(new ValidationError(error.issues));
+        next(new ValidationError(error.issues.map(issue => issue.message).join(', ')));
       } else {
         next(error);
       }

@@ -1,6 +1,7 @@
 import { IUserRepository, Email, User, UserId } from "@/domain";
 import { JWTService } from "@/infrastructure";
 import { PasswordService } from "@/infrastructure/auth/password-service";
+import { AuthenticationError, InternalServerError } from "@/domain/errors";
 import { LoginDto, AuthResponseDto } from "../dto";
 
 export class LoginUseCase {
@@ -15,12 +16,12 @@ export class LoginUseCase {
     const user = await this.userRepository.findByEmail(email);
 
     if (!user) {
-      throw new Error('Invalid credentials');
+      throw new AuthenticationError('Invalid credentials');
     }
 
     const isPasswordValid = await this.passwordService.verifyPassword(dto.password, user.getPasswordHash());
     if (!isPasswordValid) {
-      throw new Error('Invalid credentials');
+      throw new AuthenticationError('Invalid credentials');
     }
 
     // Update last login
@@ -75,7 +76,7 @@ export class RefreshTokenUseCase {
       const { userId } = this.jwtService.verifyRefreshToken(refreshToken);
       const user = await this.userRepository.findById(new UserId(userId));
       if (!user) {
-        throw new Error('User not found');
+        throw new InternalServerError('User not found');
       }
 
       const { accessToken, refreshToken: newRefreshToken } = this.jwtService.generateTokens(user);
@@ -95,7 +96,7 @@ export class RefreshTokenUseCase {
         refreshToken: newRefreshToken
       };
     } catch (error) {
-      throw new Error('Invalid refresh token');
+      throw new AuthenticationError('Invalid refresh token');
     }
   }
 

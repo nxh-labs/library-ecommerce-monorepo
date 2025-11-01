@@ -1,10 +1,11 @@
 import { UserId } from './user';
 import { BookId } from './book';
+import { ValidationError } from '../errors';
 
 export class ReviewId {
   constructor(private readonly value: string) {
     if (!value || value.trim().length === 0) {
-      throw new Error('Review ID cannot be empty');
+      throw new ValidationError('Review ID cannot be empty');
     }
   }
 
@@ -53,16 +54,16 @@ export class Review {
 
   private validateRating(rating: number): void {
     if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
-      throw new Error('Rating must be an integer between 1 and 5');
+      throw new ValidationError('Rating must be an integer between 1 and 5');
     }
   }
 
   private validateComment(comment: string): void {
     if (!comment || comment.trim().length === 0) {
-      throw new Error('Review comment cannot be empty');
+      throw new ValidationError('Review comment cannot be empty');
     }
     if (comment.length > 1000) {
-      throw new Error('Review comment cannot exceed 1000 characters');
+      throw new ValidationError('Review comment cannot exceed 1000 characters');
     }
   }
 

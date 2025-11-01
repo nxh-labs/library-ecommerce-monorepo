@@ -1,4 +1,5 @@
 import { ICartRepository, IBookRepository, IUnitOfWork, UserId, BookId, CartId, Cart } from "@/domain";
+import { NotFoundError, ConflictError } from "@/domain/errors";
 import { AddToCartDto, CartResponseDto, UpdateCartItemDto, CartSummaryDto } from "../dto";
 
 
@@ -17,10 +18,10 @@ export class AddToCartUseCase {
     // Verify book exists and is in stock
     const book = await this.bookRepository.findById(bookId);
     if (!book) {
-      throw new Error('Book not found');
+      throw new NotFoundError('Book not found');
     }
     if (!book.isInStock()) {
-      throw new Error('Book is out of stock');
+      throw new ConflictError('Book is out of stock');
     }
 
     // Get or create cart
@@ -69,7 +70,7 @@ export class UpdateCartItemUseCase {
     const userIdObj = new UserId(userId);
     const cart = await this.cartRepository.findByUserId(userIdObj);
     if (!cart) {
-      throw new Error('Cart not found');
+      throw new NotFoundError('Cart not found');
     }
 
     const updatedCart = cart.updateItemQuantity(itemId, dto.quantity);
@@ -110,7 +111,7 @@ export class RemoveFromCartUseCase {
     const userIdObj = new UserId(userId);
     const cart = await this.cartRepository.findByUserId(userIdObj);
     if (!cart) {
-      throw new Error('Cart not found');
+      throw new NotFoundError('Cart not found');
     }
 
     const updatedCart = cart.removeItem(bookId);
@@ -151,7 +152,7 @@ export class ClearCartUseCase {
     const userIdObj = new UserId(userId);
     const cart = await this.cartRepository.findByUserId(userIdObj);
     if (!cart) {
-      throw new Error('Cart not found');
+      throw new NotFoundError('Cart not found');
     }
 
     const clearedCart = cart.clear();

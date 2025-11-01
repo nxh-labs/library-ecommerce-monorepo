@@ -1,4 +1,5 @@
 import { redisClient } from './redis-client';
+import { InternalServerError } from '../../domain/errors';
 
 export interface CacheOptions {
   ttl?: number; // Time to live in seconds
@@ -18,8 +19,7 @@ export class CacheService {
       }
       return null;
     } catch (error) {
-      console.error('Cache get error:', error);
-      return null;
+      throw new InternalServerError('Cache get operation failed');
     }
   }
 
@@ -29,7 +29,7 @@ export class CacheService {
       const ttl = options.ttl || this.defaultTTL;
       await redisClient.set(fullKey, JSON.stringify(value), ttl);
     } catch (error) {
-      console.error('Cache set error:', error);
+      throw new InternalServerError('Cache set operation failed');
     }
   }
 
@@ -38,7 +38,7 @@ export class CacheService {
       const fullKey = this.getFullKey(key, keyPrefix);
       await redisClient.del(fullKey);
     } catch (error) {
-      console.error('Cache delete error:', error);
+      throw new InternalServerError('Cache delete operation failed');
     }
   }
 
@@ -51,7 +51,7 @@ export class CacheService {
         await Promise.all(keys.map(key => redisClient.del(key)));
       }
     } catch (error) {
-      console.error('Cache delete pattern error:', error);
+      throw new InternalServerError('Cache delete pattern operation failed');
     }
   }
 
@@ -61,8 +61,7 @@ export class CacheService {
       const result = await redisClient.exists(fullKey);
       return result === 1;
     } catch (error) {
-      console.error('Cache exists error:', error);
-      return false;
+      throw new InternalServerError('Cache exists operation failed');
     }
   }
 
@@ -71,7 +70,7 @@ export class CacheService {
       // Clear all keys with our prefix
       await this.deletePattern(`${this.keyPrefix}*`);
     } catch (error) {
-      console.error('Cache clear error:', error);
+      throw new InternalServerError('Cache clear operation failed');
     }
   }
 

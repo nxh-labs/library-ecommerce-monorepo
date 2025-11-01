@@ -1,12 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
 import { logger } from '../logging/logger';
 import { JWTService } from '../auth/jwt-service';
-import { ValidationError } from '../validation/validator';
 import { UserId } from '../../domain/entities/user';
 import { UserRoleValue, UserRole } from '../../domain/value-objects/user-role';
 import expressRateLimit from 'express-rate-limit';
-import { body, param, query, validationResult } from 'express-validator';
+import { body, param, query } from 'express-validator';
 import csurf from "csurf";
+import {
+  CustomError,
+} from '../../domain/errors/index';
 
 export interface AuthenticatedRequest extends Request {
   user?: {
@@ -47,35 +49,14 @@ export function errorHandler(
     method: req.method,
   });
 
-  if (error instanceof ValidationError) {
-    return res.status(400).json({
-      error: 'Validation failed',
-      details: error.errors,
-    });
-  }
-
-  if (error.message.includes('Invalid or expired')) {
-    return res.status(401).json({
-      error: 'Unauthorized',
+  if (error instanceof CustomError) {
+    return res.status(error.statusCode).json({
+      error: error.name,
       message: error.message,
     });
   }
 
-  if (error.message.includes('not found')) {
-    return res.status(404).json({
-      error: 'Not found',
-      message: error.message,
-    });
-  }
-
-  if (error.message.includes('already exists') || error.message.includes('unique constraint')) {
-    return res.status(409).json({
-      error: 'Conflict',
-      message: error.message,
-    });
-  }
-
- return  res.status(500).json({
+  return res.status(500).json({
     error: 'Internal server error',
     message: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong',
   });

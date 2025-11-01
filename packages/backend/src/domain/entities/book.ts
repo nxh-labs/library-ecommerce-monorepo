@@ -1,11 +1,12 @@
 import { ISBN } from '../value-objects/isbn';
 import { Price } from '../value-objects/price';
 import { CategoryId } from './category';
+import { ValidationError } from '../errors';
 
 export class BookId {
   constructor(private readonly value: string) {
     if (!value || value.trim().length === 0) {
-      throw new Error('Book ID cannot be empty');
+      throw new ValidationError('Book ID cannot be empty');
     }
   }
 
@@ -83,55 +84,55 @@ export class Book {
 
   private validateTitle(title: string): void {
     if (!title || title.trim().length === 0) {
-      throw new Error('Book title cannot be empty');
+      throw new ValidationError('Book title cannot be empty');
     }
     if (title.length > 255) {
-      throw new Error('Book title cannot exceed 255 characters');
+      throw new ValidationError('Book title cannot exceed 255 characters');
     }
   }
 
   private validateAuthor(author: string): void {
     if (!author || author.trim().length === 0) {
-      throw new Error('Book author cannot be empty');
+      throw new ValidationError('Book author cannot be empty');
     }
     if (author.length > 255) {
-      throw new Error('Book author cannot exceed 255 characters');
+      throw new ValidationError('Book author cannot exceed 255 characters');
     }
   }
 
   private validateDescription(description: string): void {
     if (description && description.length > 2000) {
-      throw new Error('Book description cannot exceed 2000 characters');
+      throw new ValidationError('Book description cannot exceed 2000 characters');
     }
   }
 
   private validateStockQuantity(quantity: number): void {
     if (quantity < 0) {
-      throw new Error('Stock quantity cannot be negative');
+      throw new ValidationError('Stock quantity cannot be negative');
     }
   }
 
   private validatePublisher(publisher: string): void {
     if (!publisher || publisher.trim().length === 0) {
-      throw new Error('Book publisher cannot be empty');
+      throw new ValidationError('Book publisher cannot be empty');
     }
     if (publisher.length > 255) {
-      throw new Error('Book publisher cannot exceed 255 characters');
+      throw new ValidationError('Book publisher cannot exceed 255 characters');
     }
   }
 
   private validateLanguage(language: string): void {
     if (!language || language.trim().length === 0) {
-      throw new Error('Book language cannot be empty');
+      throw new ValidationError('Book language cannot be empty');
     }
     if (language.length > 50) {
-      throw new Error('Book language cannot exceed 50 characters');
+      throw new ValidationError('Book language cannot exceed 50 characters');
     }
   }
 
   private validatePageCount(pageCount: number): void {
     if (pageCount <= 0) {
-      throw new Error('Page count must be positive');
+      throw new ValidationError('Page count must be positive');
     }
   }
 
@@ -241,10 +242,10 @@ export class Book {
 
   decreaseStock(quantity: number): void {
     if (quantity <= 0) {
-      throw new Error('Quantity to decrease must be positive');
+      throw new ValidationError('Quantity to decrease must be positive');
     }
     if (this.stockQuantity < quantity) {
-      throw new Error('Insufficient stock');
+      throw new ValidationError('Insufficient stock');
     }
     this.stockQuantity -= quantity;
     this.updatedAt = new Date();
@@ -252,7 +253,7 @@ export class Book {
 
   increaseStock(quantity: number): void {
     if (quantity <= 0) {
-      throw new Error('Quantity to increase must be positive');
+      throw new ValidationError('Quantity to increase must be positive');
     }
     this.stockQuantity += quantity;
     this.updatedAt = new Date();

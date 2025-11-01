@@ -1,11 +1,12 @@
 import { UserId } from './user';
 import { Price } from '../value-objects/price';
 import { OrderStatusValue } from '../value-objects/order-status';
+import { ValidationError } from '../errors';
 
 export class OrderId {
   constructor(private readonly value: string) {
     if (!value || value.trim().length === 0) {
-      throw new Error('Order ID cannot be empty');
+      throw new ValidationError('Order ID cannot be empty');
     }
   }
 
@@ -29,10 +30,10 @@ export class OrderItem {
 
   constructor(bookId: string, quantity: number, unitPrice: Price) {
     if (!bookId || bookId.trim().length === 0) {
-      throw new Error('Book ID cannot be empty');
+      throw new ValidationError('Book ID cannot be empty');
     }
     if (quantity <= 0) {
-      throw new Error('Quantity must be positive');
+      throw new ValidationError('Quantity must be positive');
     }
 
     this.bookId = bookId;
@@ -58,7 +59,7 @@ export class OrderItem {
 
   updateQuantity(newQuantity: number): void {
     if (newQuantity <= 0) {
-      throw new Error('Quantity must be positive');
+      throw new ValidationError('Quantity must be positive');
     }
     this.quantity = newQuantity;
   }
@@ -104,16 +105,16 @@ export class Order {
 
   private validateItems(items: OrderItem[]): void {
     if (!items || items.length === 0) {
-      throw new Error('Order must contain at least one item');
+      throw new ValidationError('Order must contain at least one item');
     }
   }
 
   private validateAddress(address: string, type: string): void {
     if (!address || address.trim().length === 0) {
-      throw new Error(`${type} address cannot be empty`);
+      throw new ValidationError(`${type} address cannot be empty`);
     }
     if (address.length > 500) {
-      throw new Error(`${type} address cannot exceed 500 characters`);
+      throw new ValidationError(`${type} address cannot exceed 500 characters`);
     }
   }
 
@@ -202,7 +203,7 @@ export class Order {
     // Check if item already exists
     const existingItemIndex = this.items.findIndex(existing => existing.equals(item));
     if (existingItemIndex >= 0) {
-      throw new Error('Item already exists in order');
+      throw new ValidationError('Item already exists in order');
     }
 
     return new Order(
@@ -241,10 +242,10 @@ export class Order {
   removeItem(bookId: string): Order {
     const filteredItems = this.items.filter(item => item.getBookId() !== bookId);
     if (filteredItems.length === this.items.length) {
-      throw new Error('Item not found in order');
+      throw new ValidationError('Item not found in order');
     }
     if (filteredItems.length === 0) {
-      throw new Error('Order must contain at least one item');
+      throw new ValidationError('Order must contain at least one item');
     }
 
     return new Order(

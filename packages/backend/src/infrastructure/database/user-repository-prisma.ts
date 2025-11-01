@@ -1,6 +1,7 @@
 import { IUserRepository, UserId, Email, FindUsersOptions, User, UserRoleValue, UserRole } from '@/domain';
 import { CountOptions } from '@/domain/repositories/user-repository';
 import { PrismaClient, UserRole as PrismaUserRole } from '@prisma/client';
+import { InternalServerError } from '@/domain/errors';
 
 export class UserRepositoryPrisma implements IUserRepository {
   constructor(private readonly prisma: PrismaClient) { }
@@ -133,7 +134,7 @@ export class UserRepositoryPrisma implements IUserRepository {
       case UserRole.ADMIN: return PrismaUserRole.ADMIN;
       case UserRole.CUSTOMER: return PrismaUserRole.CUSTOMER;
       case UserRole.MANAGER: return PrismaUserRole.MANAGER;
-      default: throw new Error("user role not supported");
+      default: throw new InternalServerError("user role not supported");
     }
   }
   private mapPrismaUserRoleToDomainUserRole(prismaUserRole:PrismaUserRole):UserRole {
@@ -141,7 +142,7 @@ export class UserRepositoryPrisma implements IUserRepository {
       case PrismaUserRole.ADMIN: return UserRole.ADMIN;
       case PrismaUserRole.CUSTOMER: return UserRole.CUSTOMER;
       case PrismaUserRole.MANAGER: return UserRole.MANAGER;
-      default: throw new Error("This user role not supported")
+      default: throw new InternalServerError("This user role not supported")
     }
-  } 
+  }
 }

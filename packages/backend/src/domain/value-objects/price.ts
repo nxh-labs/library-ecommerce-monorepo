@@ -1,12 +1,14 @@
+import { ValidationError } from '../errors';
+
 export class Price {
   private readonly value: number;
 
   constructor(value: number) {
     if (value < 0) {
-      throw new Error('Price cannot be negative');
+      throw new ValidationError('Price cannot be negative');
     }
     if (!Number.isFinite(value)) {
-      throw new Error('Price must be a finite number');
+      throw new ValidationError('Price must be a finite number');
     }
     // Round to 2 decimal places to avoid floating point precision issues
     this.value = Math.round(value * 100) / 100;
@@ -22,14 +24,14 @@ export class Price {
 
   multiply(quantity: number): Price {
     if (quantity < 0) {
-      throw new Error('Quantity cannot be negative');
+      throw new ValidationError('Quantity cannot be negative');
     }
     return new Price(this.value * quantity);
   }
 
   applyDiscount(percentage: number): Price {
     if (percentage < 0 || percentage > 100) {
-      throw new Error('Discount percentage must be between 0 and 100');
+      throw new ValidationError('Discount percentage must be between 0 and 100');
     }
     const discountAmount = (this.value * percentage) / 100;
     return new Price(this.value - discountAmount);

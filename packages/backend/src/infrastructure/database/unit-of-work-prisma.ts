@@ -1,13 +1,14 @@
 import { IUnitOfWork } from '@/domain/repositories/unit-of-work';
-import { 
-  IBookRepository, 
-  IUserRepository, 
-  IOrderRepository, 
-  IReviewRepository, 
-  ICategoryRepository, 
-  ICartRepository 
+import {
+  IBookRepository,
+  IUserRepository,
+  IOrderRepository,
+  IReviewRepository,
+  ICategoryRepository,
+  ICartRepository
 } from '@/domain';
 import { PrismaClient, Prisma } from '@prisma/client';
+import { InternalServerError } from '@/domain/errors';
 import { BookRepositoryPrisma } from './book-repository-prisma';
 import { UserRepositoryPrisma } from './user-repository-prisma';
 import { OrderRepositoryPrisma } from './order-repository-prisma';
@@ -27,17 +28,21 @@ export class UnitOfWorkPrisma implements IUnitOfWork {
   async executeInTransaction<T>(
     work: (uow: IUnitOfWork) => Promise<T>
   ): Promise<T> {
-    return await this.prisma.$transaction(
-      async (tx) => {
-        const transactionalUoW = new TransactionalUnitOfWork(tx);
-        return await work(transactionalUoW);
-      },
-      {
-        maxWait: 5000, // Temps d'attente max pour démarrer la transaction (5s)
-        timeout: 30000, // Timeout de la transaction (30s)
-        isolationLevel: Prisma.TransactionIsolationLevel.Serializable, // Niveau d'isolation
-      }
-    );
+    try {
+      return await this.prisma.$transaction(
+        async (tx) => {
+          const transactionalUoW = new TransactionalUnitOfWork(tx);
+          return await work(transactionalUoW);
+        },
+        {
+          maxWait: 5000, // Temps d'attente max pour démarrer la transaction (5s)
+          timeout: 30000, // Timeout de la transaction (30s)
+          isolationLevel: Prisma.TransactionIsolationLevel.Serializable, // Niveau d'isolation
+        }
+      );
+    } catch (error) {
+      throw new InternalServerError('Transaction failed');
+    }
   }
 
   // Ces méthodes retournent des repositories NON transactionnels

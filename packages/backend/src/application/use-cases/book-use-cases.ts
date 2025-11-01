@@ -1,4 +1,5 @@
 import { IBookRepository, IUnitOfWork, CategoryId, BookId, ISBN, Price, Book, FindBooksOptions, SearchOptions } from "@/domain";
+import { NotFoundError } from "@/domain/errors";
 import { cacheService } from "@/infrastructure";
 import { CreateBookDto, BookResponseDto, UpdateBookDto, UpdateStockDto, BookSearchDto } from "../dto";
 
@@ -72,7 +73,7 @@ export class UpdateBookUseCase {
     const bookId = new BookId(id);
     const book = await this.bookRepository.findById(bookId);
     if (!book) {
-      throw new Error('Book not found');
+      throw new NotFoundError('Book not found');
     }
 
     if (dto.title) book.updateTitle(dto.title);

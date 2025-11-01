@@ -1,4 +1,5 @@
 import { IOrderRepository, IBookRepository, ICartRepository, IUnitOfWork, UserId, OrderItem, BookId, Price, OrderId, OrderStatusValue, OrderStatus, Order, FindOrdersOptions } from "@/domain";
+import { NotFoundError, ConflictError } from "@/domain/errors";
 import { CreateOrderDto, OrderResponseDto, UpdateOrderStatusDto, UpdateOrderAddressDto, OrderSearchDto } from "../dto";
 
 
@@ -19,10 +20,10 @@ export class CreateOrderUseCase {
     for (const item of dto.items) {
       const book = await this.bookRepository.findById(new BookId(item.bookId));
       if (!book) {
-        throw new Error(`Book ${item.bookId} not found`);
+        throw new NotFoundError(`Book ${item.bookId} not found`);
       }
       if (!book.hasEnoughStock(item.quantity)) {
-        throw new Error(`Insufficient stock for book ${book.getTitle()}`);
+        throw new ConflictError(`Insufficient stock for book ${book.getTitle()}`);
       }
 
       const orderItem = new OrderItem(
@@ -101,19 +102,19 @@ export class UpdateOrderStatusUseCase {
     const orderId = new OrderId(id);
     const order = await this.orderRepository.findById(orderId);
     if (!order) {
-      throw new Error('Order not found');
+      throw new NotFoundError('Order not found');
     }
 
     const newStatus = new OrderStatusValue(dto.status);
 
     // Business rule validation
     if (order.getStatus().getValue() === OrderStatus.CANCELLED) {
-      throw new Error('Cannot update cancelled order');
+      throw new ConflictError('Cannot update cancelled order');
     }
 
     if (order.getStatus().getValue() === OrderStatus.DELIVERED &&
         dto.status !== OrderStatus.REFUNDED) {
-      throw new Error('Can only refund delivered orders');
+      throw new ConflictError('Can only refund delivered orders');
     }
 
     const result = await this.unitOfWork.executeInTransaction(async (uow) => {
@@ -157,12 +158,12 @@ export class UpdateOrderAddressUseCase {
     const orderId = new OrderId(id);
     const order = await this.orderRepository.findById(orderId);
     if (!order) {
-      throw new Error('Order not found');
+      throw new NotFoundError('Order not found');
     }
 
     // Only allow address updates for pending orders
     if (!order.canBeCancelled()) {
-      throw new Error('Cannot update address for orders that are being processed');
+      throw new ConflictError('Cannot update address for orders that are being processed');
     }
 
     if (dto.shippingAddress) {

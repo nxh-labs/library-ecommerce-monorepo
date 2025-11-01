@@ -1,9 +1,11 @@
+import { ValidationError } from '../errors';
+
 export class ISBN {
   private readonly value: string;
 
   constructor(value: string) {
     if (!this.isValidISBN(value)) {
-      throw new Error('Invalid ISBN format');
+      throw new ValidationError('Invalid ISBN format');
     }
     this.value = value.replace(/-/g, '').toUpperCase();
   }

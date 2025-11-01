@@ -1,4 +1,5 @@
 import { IReviewRepository, IUnitOfWork, UserId, BookId, ReviewId, Review, FindReviewsOptions } from "@/domain";
+import { ConflictError, NotFoundError, AuthorizationError } from "@/domain/errors";
 import { CreateReviewDto, ReviewResponseDto, UpdateReviewDto, ReviewSearchDto, BookRatingDto } from "../dto";
 
 // Commands
@@ -16,7 +17,7 @@ export class CreateReviewUseCase {
     const existingReviews = await this.reviewRepository.findByUserId(userIdObj, { limit: 1000 });
     const hasReviewed = existingReviews.some(review => review.getBookId().equals(bookId));
     if (hasReviewed) {
-      throw new Error('User has already reviewed this book');
+      throw new ConflictError('User has already reviewed this book');
     }
 
     const reviewId = new ReviewId(crypto.randomUUID());
@@ -61,12 +62,12 @@ export class UpdateReviewUseCase {
 
     const review = await this.reviewRepository.findById(reviewId);
     if (!review) {
-      throw new Error('Review not found');
+      throw new NotFoundError('Review not found');
     }
 
     // Check if user owns the review
     if (!review.getUserId().equals(userIdObj)) {
-      throw new Error('Unauthorized to update this review');
+      throw new AuthorizationError('Unauthorized to update this review');
     }
 
     if (dto.rating !== undefined) {
@@ -109,12 +110,12 @@ export class DeleteReviewUseCase {
 
     const review = await this.reviewRepository.findById(reviewId);
     if (!review) {
-      throw new Error('Review not found');
+      throw new NotFoundError('Review not found');
     }
 
     // Check if user owns the review
     if (!review.getUserId().equals(userIdObj)) {
-      throw new Error('Unauthorized to delete this review');
+      throw new AuthorizationError('Unauthorized to delete this review');
     }
 
     await this.unitOfWork.executeInTransaction(async (uow) => {

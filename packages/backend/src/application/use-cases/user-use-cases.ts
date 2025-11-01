@@ -1,4 +1,5 @@
 import { IUserRepository, IUnitOfWork, UserId, Email, UserRoleValue, UserRole, User, FindUsersOptions } from "@/domain";
+import { ConflictError, NotFoundError, ValidationError } from "@/domain/errors";
 import { PasswordService } from "@/infrastructure/auth/password-service";
 import { CreateUserDto, UserResponseDto, UpdateUserDto, ChangePasswordDto, UserSearchDto } from "../dto";
 
@@ -19,7 +20,7 @@ export class CreateUserUseCase {
     // Check if user already exists
     const existingUser = await this.userRepository.findByEmail(email);
     if (existingUser) {
-      throw new Error('User with this email already exists');
+      throw new ConflictError('User with this email already exists');
     }
 
     const hashedPassword = await this.hashPassword(dto.password);
@@ -69,7 +70,7 @@ export class UpdateUserUseCase {
     const userId = new UserId(id);
     const user = await this.userRepository.findById(userId);
     if (!user) {
-      throw new Error('User not found');
+      throw new NotFoundError('User not found');
     }
 
     if (dto.firstName || dto.lastName) {
@@ -124,13 +125,13 @@ export class ChangePasswordUseCase {
     const userId = new UserId(id);
     const user = await this.userRepository.findById(userId);
     if (!user) {
-      throw new Error('User not found');
+      throw new NotFoundError('User not found');
     }
 
     // Verify current password
     const isCurrentPasswordValid = await this.verifyPassword(dto.currentPassword, user.getPasswordHash());
     if (!isCurrentPasswordValid) {
-      throw new Error('Current password is incorrect');
+      throw new ValidationError('Current password is incorrect');
     }
 
     const newHashedPassword = await this.hashPassword(dto.newPassword);

@@ -1,4 +1,5 @@
 import { ICategoryRepository, IUnitOfWork, CategoryId, Category, FindCategoriesOptions } from "@/domain";
+import { NotFoundError, ConflictError } from "@/domain/errors";
 import { cacheService } from "@/infrastructure";
 import { CreateCategoryDto, CategoryResponseDto, UpdateCategoryDto, CategorySearchDto, CategoryHierarchyDto } from "../dto";
 
@@ -18,7 +19,7 @@ export class CreateCategoryUseCase {
     if (parentId) {
       const parent = await this.categoryRepository.findById(parentId);
       if (!parent) {
-        throw new Error('Parent category not found');
+        throw new NotFoundError('Parent category not found');
       }
     }
 
@@ -63,7 +64,7 @@ export class UpdateCategoryUseCase {
     const categoryId = new CategoryId(id);
     const category = await this.categoryRepository.findById(categoryId);
     if (!category) {
-      throw new Error('Category not found');
+      throw new NotFoundError('Category not found');
     }
 
     if (dto.name) category.updateName(dto.name);
@@ -73,7 +74,7 @@ export class UpdateCategoryUseCase {
       if (parentId) {
         const parent = await this.categoryRepository.findById(parentId);
         if (!parent) {
-          throw new Error('Parent category not found');
+          throw new NotFoundError('Parent category not found');
         }
       }
       category.setParent(parentId);
@@ -115,7 +116,7 @@ export class DeleteCategoryUseCase {
     // Check if category has children
     const children = await this.categoryRepository.findByParentId(categoryId);
     if (children.length > 0) {
-      throw new Error('Cannot delete category with children');
+      throw new ConflictError('Cannot delete category with children');
     }
 
     await this.unitOfWork.executeInTransaction(async (uow) => {

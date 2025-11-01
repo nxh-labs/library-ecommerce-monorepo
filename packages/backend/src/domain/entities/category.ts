@@ -1,7 +1,9 @@
+import { ValidationError } from '../errors';
+
 export class CategoryId {
   constructor(private readonly value: string) {
     if (!value || value.trim().length === 0) {
-      throw new Error('Category ID cannot be empty');
+      throw new ValidationError('Category ID cannot be empty');
     }
   }
 
@@ -47,16 +49,16 @@ export class Category {
 
   private validateName(name: string): void {
     if (!name || name.trim().length === 0) {
-      throw new Error('Category name cannot be empty');
+      throw new ValidationError('Category name cannot be empty');
     }
     if (name.length > 100) {
-      throw new Error('Category name cannot exceed 100 characters');
+      throw new ValidationError('Category name cannot exceed 100 characters');
     }
   }
 
   private validateDescription(description: string): void {
     if (description && description.length > 500) {
-      throw new Error('Category description cannot exceed 500 characters');
+      throw new ValidationError('Category description cannot exceed 500 characters');
     }
   }
 
@@ -101,7 +103,7 @@ export class Category {
   setParent(parentId: CategoryId | undefined): void {
     // Prevent circular references (would need repository check for full validation)
     if (parentId && parentId.equals(this.id)) {
-      throw new Error('Category cannot be its own parent');
+      throw new ValidationError('Category cannot be its own parent');
     }
     if(parentId) parentId = parentId;
     this.updatedAt = new Date();

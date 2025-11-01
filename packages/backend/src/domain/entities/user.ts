@@ -1,10 +1,11 @@
 import { Email } from '../value-objects/email';
 import { UserRoleValue } from '../value-objects/user-role';
+import { ValidationError } from '../errors';
 
 export class UserId {
   constructor(private readonly value: string) {
     if (!value || value.trim().length === 0) {
-      throw new Error('User ID cannot be empty');
+      throw new ValidationError('User ID cannot be empty');
     }
   }
 
@@ -60,16 +61,16 @@ export class User {
 
   private validatePasswordHash(passwordHash: string): void {
     if (!passwordHash || passwordHash.trim().length === 0) {
-      throw new Error('Password hash cannot be empty');
+      throw new ValidationError('Password hash cannot be empty');
     }
   }
 
   private validateName(name: string, fieldName: string): void {
     if (!name || name.trim().length === 0) {
-      throw new Error(`${fieldName} cannot be empty`);
+      throw new ValidationError(`${fieldName} cannot be empty`);
     }
     if (name.length > 100) {
-      throw new Error(`${fieldName} cannot exceed 100 characters`);
+      throw new ValidationError(`${fieldName} cannot exceed 100 characters`);
     }
   }
 

@@ -1,5 +1,6 @@
 import { User } from '@/domain';
 import jwt ,{SignOptions} from 'jsonwebtoken';
+import { InternalServerError } from '@/domain/errors';
 
 export interface JWTPayload {
   userId: string;
@@ -49,7 +50,7 @@ export class JWTService {
     try {
       return jwt.verify(token, this.jwtSecret) as JWTPayload;
     } catch (error) {
-      throw new Error('Invalid or expired access token');
+      throw new InternalServerError('Invalid or expired access token');
     }
   }
 
@@ -57,7 +58,7 @@ export class JWTService {
     try {
       return jwt.verify(token, this.jwtRefreshSecret) as { userId: string };
     } catch (error) {
-      throw new Error('Invalid or expired refresh token');
+      throw new InternalServerError('Invalid or expired refresh token');
     }
   }
 
